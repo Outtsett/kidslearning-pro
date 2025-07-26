@@ -54,8 +54,6 @@ export function AvatarCreation({ onProfileCreated, ageGroup }: AvatarCreationPro
     return '10-12'
   }
 
-  const ageRange = getAgeRange(ageGroup)
-
   const handleComplete = () => {
     if (name && age) {
       const profile: UserProfile = {
