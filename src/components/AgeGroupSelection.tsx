@@ -79,7 +79,7 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
           <div className="inline-block p-8 bg-white/90 rounded-3xl shadow-xl">
             <div className="text-8xl mb-6">🧸</div>
             <h1 className="font-heading text-4xl font-bold text-foreground mb-4">
-              Welcome to KidsLearn!
+              Welcome to KidsLearning Pro!
             </h1>
             <p className="font-body text-xl text-muted-foreground max-w-2xl mx-auto">
               Hi there! I'm Teddy, your learning buddy. Let's find the perfect learning adventure just for you!
