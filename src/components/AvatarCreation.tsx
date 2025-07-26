@@ -9,6 +9,7 @@ import type { UserProfile, AgeGroup } from '@/App'
 
 interface AvatarCreationProps {
   onProfileCreated: (profile: UserProfile) => void
+  ageGroup: AgeGroup
 }
 
 const AVATAR_OPTIONS = {
@@ -25,10 +26,20 @@ const THEMES = [
   { id: 'candy', name: 'Candy Land', color: 'bg-pink-200', locked: true }
 ]
 
-export function AvatarCreation({ onProfileCreated }: AvatarCreationProps) {
+export function AvatarCreation({ onProfileCreated, ageGroup }: AvatarCreationProps) {
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
-  const [age, setAge] = useState<number | ''>('')
+  
+  const getAgeRange = (ageGroup: AgeGroup) => {
+    switch (ageGroup) {
+      case '3-5': return { min: 3, max: 5, default: 4 }
+      case '6-9': return { min: 6, max: 9, default: 7 }
+      case '10-12': return { min: 10, max: 12, default: 11 }
+    }
+  }
+
+  const ageRange = getAgeRange(ageGroup)
+  const [age, setAge] = useState<number | ''>(ageRange.default)
   const [selectedAvatar, setSelectedAvatar] = useState({
     body: 'light',
     hair: 'brown-short',
@@ -43,12 +54,14 @@ export function AvatarCreation({ onProfileCreated }: AvatarCreationProps) {
     return '10-12'
   }
 
+  const ageRange = getAgeRange(ageGroup)
+
   const handleComplete = () => {
     if (name && age) {
       const profile: UserProfile = {
         name,
         age: age as number,
-        ageGroup: getAgeGroup(age as number),
+        ageGroup: ageGroup, // Use the pre-selected age group
         avatar: selectedAvatar,
         theme: selectedTheme,
         coins: 100,
@@ -111,17 +124,17 @@ export function AvatarCreation({ onProfileCreated }: AvatarCreationProps) {
                 </label>
                 <Input
                   type="number"
-                  min="3"
-                  max="12"
+                  min={ageRange.min}
+                  max={ageRange.max}
                   value={age}
                   onChange={(e) => setAge(e.target.value ? parseInt(e.target.value) : '')}
-                  placeholder="Enter your age"
+                  placeholder={`Enter your age (${ageRange.min}-${ageRange.max})`}
                   className="text-lg font-heading"
                 />
               </div>
               <Button
                 onClick={() => setStep(2)}
-                disabled={!name || !age}
+                disabled={!name || !age || (age as number) < ageRange.min || (age as number) > ageRange.max}
                 className="w-full font-heading text-lg"
                 size="lg"
               >

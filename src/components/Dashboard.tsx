@@ -46,6 +46,115 @@ const SUBJECTS = [
   }
 ]
 
+// Age-specific themes and content
+const AGE_GROUP_THEMES = {
+  '3-5': {
+    subjects: [
+      {
+        id: 'math' as Subject,
+        name: 'Count & Play',
+        icon: Calculator,
+        color: 'bg-pink-400 text-white',
+        description: '🔢 Fun with numbers and shapes!'
+      },
+      {
+        id: 'reading' as Subject,
+        name: 'Letter Fun',
+        icon: Book,
+        color: 'bg-purple-400 text-white',
+        description: '📖 ABC adventures and stories!'
+      },
+      {
+        id: 'science' as Subject,
+        name: 'Nature Time',
+        icon: Flask,
+        color: 'bg-green-400 text-white',
+        description: '🌱 Animals, plants, and weather!'
+      },
+      {
+        id: 'art' as Subject,
+        name: 'Art Magic',
+        icon: Palette,
+        color: 'bg-yellow-400 text-white',
+        description: '🎨 Colors and creative fun!'
+      }
+    ],
+    background: 'from-pink-300/20 via-purple-300/20 to-yellow-300/20',
+    companionMessage: (name: string) => `"Hi ${name}! Let's play and learn together! What fun activity should we try today?"`,
+    companionEmoji: '🌟'
+  },
+  '6-9': {
+    subjects: [
+      {
+        id: 'math' as Subject,
+        name: 'Math Adventures',
+        icon: Calculator,
+        color: 'bg-blue-500 text-white',
+        description: '➕ Addition, subtraction & more!'
+      },
+      {
+        id: 'reading' as Subject,
+        name: 'Story World',
+        icon: Book,
+        color: 'bg-indigo-500 text-white',
+        description: '📚 Amazing books and writing!'
+      },
+      {
+        id: 'science' as Subject,
+        name: 'Science Lab',
+        icon: Flask,
+        color: 'bg-teal-500 text-white',
+        description: '🔬 Cool experiments await!'
+      },
+      {
+        id: 'art' as Subject,
+        name: 'Art Studio',
+        icon: Palette,
+        color: 'bg-orange-500 text-white',
+        description: '🖌️ Digital art and crafts!'
+      }
+    ],
+    background: 'from-blue-300/20 via-teal-300/20 to-green-300/20',
+    companionMessage: (name: string) => `"Hey ${name}! Ready for some awesome learning adventures? Pick a subject and let's explore together!"`,
+    companionEmoji: '🚀'
+  },
+  '10-12': {
+    subjects: [
+      {
+        id: 'math' as Subject,
+        name: 'Advanced Math',
+        icon: Calculator,
+        color: 'bg-slate-600 text-white',
+        description: '✖️ Complex problems & geometry!'
+      },
+      {
+        id: 'reading' as Subject,
+        name: 'Literature',
+        icon: Book,
+        color: 'bg-violet-600 text-white',
+        description: '📝 Deep stories and analysis!'
+      },
+      {
+        id: 'science' as Subject,
+        name: 'Discovery Lab',
+        icon: Flask,
+        color: 'bg-emerald-600 text-white',
+        description: '⚗️ Chemistry and physics!'
+      },
+      {
+        id: 'art' as Subject,
+        name: 'Design Studio',
+        icon: Palette,
+        color: 'bg-rose-600 text-white',
+        description: '🎭 Animation and design!'
+      }
+    ],
+    background: 'from-slate-300/20 via-violet-300/20 to-emerald-300/20',
+    companionMessage: (name: string) => `"Hello ${name}! Let's tackle some challenging and exciting learning projects. Which subject interests you most today?"`,
+    companionEmoji: '🎓'
+  }
+}
+
 const ACTIVITIES_BY_AGE = {
   '3-5': {
     math: [
@@ -120,6 +229,7 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
 
   const activities = ACTIVITIES_BY_AGE[profile.ageGroup]
+  const theme = AGE_GROUP_THEMES[profile.ageGroup]
 
   const getDifficultyStars = (difficulty: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -148,7 +258,7 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
+    <div className={`min-h-screen bg-gradient-to-br ${theme.background} p-4`}>
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between bg-white/80 rounded-3xl p-6 shadow-lg">
@@ -191,11 +301,10 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
         <Card className="bg-gradient-to-r from-primary/20 to-secondary/20 border-none">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="text-4xl">😊</div>
+              <div className="text-4xl">{theme.companionEmoji}</div>
               <div className="flex-1">
                 <p className="font-body text-lg text-foreground">
-                  "Hey {profile.name}! I'm so excited to learn with you today. 
-                  What subject should we explore together?"
+                  {theme.companionMessage(profile.name)}
                 </p>
               </div>
             </div>
@@ -204,7 +313,7 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
 
         {/* Progress Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {SUBJECTS.map((subject) => {
+          {theme.subjects.map((subject) => {
             const progress = profile.progress[subject.id]
             return (
               <Card key={subject.id} className="text-center">
@@ -233,7 +342,7 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
               Choose Your Subject
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {SUBJECTS.map((subject) => (
+              {theme.subjects.map((subject) => (
                 <Card 
                   key={subject.id}
                   className="cursor-pointer hover:shadow-lg transition-all hover:scale-105"
@@ -267,7 +376,7 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
                 ← Back
               </Button>
               <h2 className="font-heading text-xl font-semibold text-foreground">
-                {SUBJECTS.find(s => s.id === selectedSubject)?.name} Activities
+                {theme.subjects.find(s => s.id === selectedSubject)?.name} Activities
               </h2>
             </div>
 

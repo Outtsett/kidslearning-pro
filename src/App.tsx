@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
+import { AgeGroupSelection } from '@/components/AgeGroupSelection'
 import { AvatarCreation } from '@/components/AvatarCreation'
 import { Dashboard } from '@/components/Dashboard'
 import { LearningActivity } from '@/components/LearningActivity'
@@ -32,8 +33,13 @@ export interface ActivityState {
 
 function App() {
   const [profile, setProfile] = useKV<UserProfile | null>('user-profile', null)
+  const [selectedAgeGroup, setSelectedAgeGroup] = useKV<AgeGroup | null>('selected-age-group', null)
   const [currentActivity, setCurrentActivity] = useState<ActivityState>({ subject: null, activityId: null })
   const [showParentDashboard, setShowParentDashboard] = useState(false)
+
+  const handleAgeGroupSelected = (ageGroup: AgeGroup) => {
+    setSelectedAgeGroup(ageGroup)
+  }
 
   const handleProfileCreated = (newProfile: UserProfile) => {
     setProfile(newProfile)
@@ -65,8 +71,14 @@ function App() {
     setShowParentDashboard(false)
   }
 
+  // If no age group is selected, show age group selection
+  if (!selectedAgeGroup) {
+    return <AgeGroupSelection onAgeGroupSelected={handleAgeGroupSelected} />
+  }
+
+  // If age group is selected but no profile exists, show avatar creation
   if (!profile) {
-    return <AvatarCreation onProfileCreated={handleProfileCreated} />
+    return <AvatarCreation onProfileCreated={handleProfileCreated} ageGroup={selectedAgeGroup} />
   }
 
   if (showParentDashboard) {
