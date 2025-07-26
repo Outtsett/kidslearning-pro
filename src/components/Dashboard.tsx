@@ -168,9 +168,9 @@ const ACTIVITIES_BY_AGE = {
       { id: 'plants-grow', name: 'How Plants Grow', difficulty: 2 }
     ],
     reading: [
-      { id: 'letters-abc', name: 'ABC Letters', difficulty: 1 },
-      { id: 'rhyming-words', name: 'Rhyming Fun', difficulty: 2 },
-      { id: 'short-stories', name: 'Picture Stories', difficulty: 2 }
+      { id: 'letterland-adventure', name: 'Letterland Adventure', difficulty: 1 },
+      { id: 'find-letter', name: 'Find the Letter', difficulty: 1 },
+      { id: 'sound-match', name: 'Sound Matching', difficulty: 2 }
     ],
     art: [
       { id: 'color-mixing', name: 'Mix Colors', difficulty: 1 },
@@ -190,9 +190,9 @@ const ACTIVITIES_BY_AGE = {
       { id: 'body-parts', name: 'Our Amazing Body', difficulty: 2 }
     ],
     reading: [
-      { id: 'sight-words', name: 'Common Words', difficulty: 2 },
-      { id: 'chapter-books', name: 'Chapter Stories', difficulty: 3 },
-      { id: 'writing-sentences', name: 'Write Sentences', difficulty: 3 }
+      { id: 'story-safari', name: 'Story Safari', difficulty: 2 },
+      { id: 'word-builder', name: 'Word Builder', difficulty: 2 },
+      { id: 'story-quiz', name: 'Story Quiz', difficulty: 3 }
     ],
     art: [
       { id: 'digital-painting', name: 'Digital Art', difficulty: 2 },
@@ -212,9 +212,9 @@ const ACTIVITIES_BY_AGE = {
       { id: 'force-motion', name: 'Forces and Motion', difficulty: 4 }
     ],
     reading: [
-      { id: 'novel-analysis', name: 'Story Analysis', difficulty: 4 },
-      { id: 'poetry-writing', name: 'Write Poems', difficulty: 3 },
-      { id: 'research-skills', name: 'Research Projects', difficulty: 4 }
+      { id: 'grammar-galaxy', name: 'Grammar Galaxy', difficulty: 4 },
+      { id: 'sentence-fix', name: 'Fix the Sentence', difficulty: 3 },
+      { id: 'reading-quest', name: 'Reading Quest', difficulty: 4 }
     ],
     art: [
       { id: 'perspective-drawing', name: 'Perspective Art', difficulty: 4 },

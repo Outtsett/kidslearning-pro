@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, CheckCircle, Star, Coins } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
+import { ReadingRealm } from '@/components/reading/ReadingRealm'
 import type { UserProfile, Subject } from '@/App'
 import { useSessionTracking } from '@/hooks/useSessionTracking'
 import { toast } from 'sonner'
@@ -103,6 +104,17 @@ const ENCOURAGEMENT_MESSAGES = [
 ]
 
 export function LearningActivity({ subject, activityId, profile, onComplete, onBack }: LearningActivityProps) {
+  // If this is a reading activity, use the Reading Realm
+  if (subject === 'reading') {
+    return (
+      <ReadingRealm
+        profile={profile}
+        onComplete={onComplete}
+        onBack={onBack}
+      />
+    )
+  }
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<string>('')
   const [showFeedback, setShowFeedback] = useState(false)
