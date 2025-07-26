@@ -12,6 +12,7 @@ interface DashboardProps {
   profile: UserProfile
   onProfileUpdate: (updater: (profile: UserProfile) => UserProfile) => void
   onActivityStart: (subject: Subject, activityId: string) => void
+  onShowParentDashboard: () => void
 }
 
 const SUBJECTS = [
@@ -114,7 +115,7 @@ const ACTIVITIES_BY_AGE = {
   }
 }
 
-export function Dashboard({ profile, onProfileUpdate, onActivityStart }: DashboardProps) {
+export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowParentDashboard }: DashboardProps) {
   const [showCustomization, setShowCustomization] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
 
@@ -174,6 +175,14 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart }: Dashboa
             >
               <Settings className="w-4 h-4" />
               Customize
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onShowParentDashboard}
+              className="hidden md:flex"
+            >
+              📊 Parent View
             </Button>
           </div>
         </div>
@@ -287,6 +296,26 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart }: Dashboa
             </div>
           </div>
         )}
+
+        {/* Mobile Parent Dashboard Access */}
+        <div className="md:hidden mt-8">
+          <Card className="bg-gradient-to-r from-muted/50 to-card border-dashed">
+            <CardContent className="p-4">
+              <div className="text-center space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  For parents: Monitor learning progress
+                </p>
+                <Button
+                  variant="secondary"
+                  onClick={onShowParentDashboard}
+                  className="w-full"
+                >
+                  📊 View Parent Dashboard
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, CheckCircle, Star, Coins } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import type { UserProfile, Subject } from '@/App'
+import { useSessionTracking } from '@/hooks/useSessionTracking'
 import { toast } from 'sonner'
 
 interface LearningActivityProps {
@@ -108,6 +109,8 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
   const [isCorrect, setIsCorrect] = useState(false)
   const [score, setScore] = useState(0)
   const [completed, setCompleted] = useState(false)
+  const [startTime] = useState(Date.now())
+  const { recordSession } = useSessionTracking()
 
   const questions = SAMPLE_ACTIVITIES[activityId] || SAMPLE_ACTIVITIES['counting-1-10']
   const currentQuestion = questions[currentQuestionIndex]
@@ -148,6 +151,10 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
     setCompleted(true)
     const percentage = (score / questions.length) * 100
     const coinsEarned = Math.max(10, Math.floor(percentage / 10) * 5)
+    const duration = Math.round((Date.now() - startTime) / 60000) // Convert to minutes
+    
+    // Record the learning session
+    recordSession(subject, Math.max(1, duration), questions.length, coinsEarned, percentage)
     
     setTimeout(() => {
       onComplete(coinsEarned)

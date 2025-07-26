@@ -3,6 +3,7 @@ import { useKV } from '@github/spark/hooks'
 import { AvatarCreation } from '@/components/AvatarCreation'
 import { Dashboard } from '@/components/Dashboard'
 import { LearningActivity } from '@/components/LearningActivity'
+import { ParentDashboard } from '@/components/ParentDashboard'
 
 export type AgeGroup = '3-5' | '6-9' | '10-12'
 export type Subject = 'math' | 'science' | 'reading' | 'art'
@@ -32,6 +33,7 @@ export interface ActivityState {
 function App() {
   const [profile, setProfile] = useKV<UserProfile | null>('user-profile', null)
   const [currentActivity, setCurrentActivity] = useState<ActivityState>({ subject: null, activityId: null })
+  const [showParentDashboard, setShowParentDashboard] = useState(false)
 
   const handleProfileCreated = (newProfile: UserProfile) => {
     setProfile(newProfile)
@@ -55,8 +57,25 @@ function App() {
     setCurrentActivity({ subject: null, activityId: null })
   }
 
+  const handleShowParentDashboard = () => {
+    setShowParentDashboard(true)
+  }
+
+  const handleBackFromParentDashboard = () => {
+    setShowParentDashboard(false)
+  }
+
   if (!profile) {
     return <AvatarCreation onProfileCreated={handleProfileCreated} />
+  }
+
+  if (showParentDashboard) {
+    return (
+      <ParentDashboard
+        profile={profile}
+        onBack={handleBackFromParentDashboard}
+      />
+    )
   }
 
   if (currentActivity.subject && currentActivity.activityId) {
@@ -76,6 +95,7 @@ function App() {
       profile={profile}
       onProfileUpdate={setProfile}
       onActivityStart={handleActivityStart}
+      onShowParentDashboard={handleShowParentDashboard}
     />
   )
 }
