@@ -12,7 +12,11 @@ interface CompanionProps {
 
 // AI-Enhanced Movement Controller
 function useAIMovement(emotion: string, activity: string) {
-  const [movement, setMovement] = useState({
+  const [movement, setMovement] = useState<{
+    x: number;
+    y: number;
+    intensity: number;
+  }>({
     x: 0,
     y: 0,
     intensity: 1
@@ -157,7 +161,9 @@ Keep it gentle and nurturing for young children.`
       ease: 'power2.inOut'
     })
 
-    return () => tl.kill()
+    return () => {
+      if (tl) tl.kill()
+    }
   }, [movement])
 
   useEffect(() => {
@@ -397,7 +403,9 @@ Keep it playful and tech-themed for school-age children.`
       ease: 'power1.inOut'
     })
 
-    return () => tl.kill()
+    return () => {
+      if (tl) tl.kill()
+    }
   }, [movement])
 
   useEffect(() => {
@@ -643,7 +651,9 @@ Keep it mystical but relatable for older children.`
       ease: 'power2.inOut'
     })
 
-    return () => tl.kill()
+    return () => {
+      if (tl) tl.kill()
+    }
   }, [movement])
 
   useEffect(() => {
