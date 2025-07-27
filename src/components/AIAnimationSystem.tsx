@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useAnimation } from 'framer-motion'
 import type { AgeGroup, Subject } from '@/App'
@@ -93,7 +94,6 @@ Use subject-specific themes:
     const response = await spark.llm(prompt, 'gpt-4o', true)
     return JSON.parse(response)
   } catch (error) {
-    // Fallback pattern if AI generation fails
     return getDefaultPattern(ageGroup, emotion, trigger)
   }
 }
@@ -103,44 +103,44 @@ const getDefaultPattern = (ageGroup: AgeGroup, emotion: string, trigger: string)
   const patterns = {
     '3-5': {
       celebration: {
-        type: 'celebration' as const,
-        particles: [{ emoji: '🌟', count: 6, duration: 2, physics: 'float' as const }],
-        companionAction: { animation: 'bounce' as const, intensity: 5, duration: 2 },
-        backgroundEffect: { type: 'pulse' as const, color: '#fbbf24', intensity: 3 }
+        type: 'celebration',
+        particles: [{ emoji: '🌟', count: 6, duration: 2, physics: 'float' }],
+        companionAction: { animation: 'bounce', intensity: 5, duration: 2 },
+        backgroundEffect: { type: 'pulse', color: '#fbbf24', intensity: 3 }
       },
       encouragement: {
-        type: 'encouragement' as const,
-        particles: [{ emoji: '💕', count: 4, duration: 3, physics: 'float' as const }],
-        companionAction: { animation: 'glow' as const, intensity: 4, duration: 3 },
-        backgroundEffect: { type: 'wave' as const, color: '#f472b6', intensity: 2 }
+        type: 'encouragement',
+        particles: [{ emoji: '💕', count: 4, duration: 3, physics: 'float' }],
+        companionAction: { animation: 'glow', intensity: 4, duration: 3 },
+        backgroundEffect: { type: 'wave', color: '#f472b6', intensity: 2 }
       }
     },
     '6-9': {
       celebration: {
-        type: 'celebration' as const,
-        particles: [{ emoji: '⚡', count: 8, duration: 2.5, physics: 'bounce' as const }],
-        companionAction: { animation: 'dance' as const, intensity: 7, duration: 2.5 },
-        backgroundEffect: { type: 'sparkle' as const, color: '#3b82f6', intensity: 5 }
+        type: 'celebration',
+        particles: [{ emoji: '⚡', count: 8, duration: 2.5, physics: 'bounce' }],
+        companionAction: { animation: 'dance', intensity: 7, duration: 2.5 },
+        backgroundEffect: { type: 'sparkle', color: '#3b82f6', intensity: 5 }
       },
       encouragement: {
-        type: 'encouragement' as const,
-        particles: [{ emoji: '🚀', count: 5, duration: 3, physics: 'spiral' as const }],
-        companionAction: { animation: 'spin' as const, intensity: 6, duration: 3 },
-        backgroundEffect: { type: 'gradient_shift' as const, color: '#06b6d4', intensity: 4 }
+        type: 'encouragement',
+        particles: [{ emoji: '🚀', count: 5, duration: 3, physics: 'spiral' }],
+        companionAction: { animation: 'spin', intensity: 6, duration: 3 },
+        backgroundEffect: { type: 'gradient_shift', color: '#06b6d4', intensity: 4 }
       }
     },
     '10-12': {
       celebration: {
-        type: 'celebration' as const,
-        particles: [{ emoji: '✨', count: 10, duration: 3, physics: 'explode' as const }],
-        companionAction: { animation: 'dance' as const, intensity: 8, duration: 3 },
-        backgroundEffect: { type: 'wave' as const, color: '#8b5cf6', intensity: 6 }
+        type: 'celebration',
+        particles: [{ emoji: '✨', count: 10, duration: 3, physics: 'explode' }],
+        companionAction: { animation: 'dance', intensity: 8, duration: 3 },
+        backgroundEffect: { type: 'wave', color: '#8b5cf6', intensity: 6 }
       },
       encouragement: {
-        type: 'encouragement' as const,
-        particles: [{ emoji: '🎯', count: 6, duration: 3.5, physics: 'spiral' as const }],
-        companionAction: { animation: 'glow' as const, intensity: 7, duration: 3.5 },
-        backgroundEffect: { type: 'pulse' as const, color: '#10b981', intensity: 5 }
+        type: 'encouragement',
+        particles: [{ emoji: '🎯', count: 6, duration: 3.5, physics: 'spiral' }],
+        companionAction: { animation: 'glow', intensity: 7, duration: 3.5 },
+        backgroundEffect: { type: 'pulse', color: '#10b981', intensity: 5 }
       }
     }
   }
@@ -167,27 +167,17 @@ function AnimatedParticles({ particles }: { particles: ParticleConfig[] }) {
                 scale: 0
               }}
               animate={{
-                x: particle.physics === 'explode' 
-                  ? `${50 + (Math.random() - 0.5) * 100}%`
-                  : particle.physics === 'spiral'
-                  ? [50, 50 + Math.cos(index * 0.5) * 30, 50 + Math.cos(index * 0.5 + Math.PI) * 30]
-                  : `${50 + (Math.random() - 0.5) * 40}%`,
-                y: particle.physics === 'float'
-                  ? [`50%`, `${30 + Math.random() * 20}%`, `${10 + Math.random() * 20}%`]
-                  : particle.physics === 'bounce'
-                  ? [50, 30, 50, 25, 50]
-                  : particle.physics === 'explode'
-                  ? `${50 + (Math.random() - 0.5) * 100}%`
-                  : [50, 30 + Math.sin(index * 0.5) * 20, 50],
+                x: `${50 + (Math.random() - 0.5) * 100}%`,
+                y: `${50 + (Math.random() - 0.5) * 100}%`,
                 opacity: [0, 1, 1, 0],
                 scale: [0, 1.2, 1, 0],
-                rotate: particle.physics === 'spiral' ? [0, 360] : [0, Math.random() * 360]
+                rotate: [0, Math.random() * 360]
               }}
               exit={{ opacity: 0, scale: 0 }}
               transition={{
                 duration: particle.duration,
                 delay: index * 0.1,
-                ease: particle.physics === 'bounce' ? 'easeOut' : 'easeInOut'
+                ease: 'easeInOut'
               }}
             >
               {particle.emoji}
@@ -261,17 +251,6 @@ function BackgroundEffect({ effect }: { effect: BackgroundEffect }) {
     />
   )
 }
-    <div
-      ref={bgRef}
-      className="absolute inset-0 pointer-events-none transition-all duration-500"
-      style={{
-        background: effect.type === 'gradient_shift' 
-          ? `radial-gradient(circle at 50% 50%, ${effect.color}15, transparent 70%)`
-          : `${effect.color}10`
-      }}
-    />
-  )
-}
 
 // Main AI Animation System component
 export function AIAnimationSystem({
@@ -286,7 +265,6 @@ export function AIAnimationSystem({
   const [isGenerating, setIsGenerating] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Generate AI animation when trigger changes
   useEffect(() => {
     if (trigger === 'idle') return
 
@@ -302,7 +280,6 @@ export function AIAnimationSystem({
         )
         setCurrentPattern(pattern)
         
-        // Clear animation after completion
         setTimeout(() => {
           setCurrentPattern(null)
         }, Math.max(...pattern.particles.map(p => p.duration)) * 1000 + 1000)
@@ -318,17 +295,14 @@ export function AIAnimationSystem({
 
   return (
     <div ref={containerRef} className="relative">
-      {/* Background effects */}
       {currentPattern && (
         <BackgroundEffect effect={currentPattern.backgroundEffect} />
       )}
       
-      {/* Particle animations */}
       {currentPattern && (
         <AnimatedParticles particles={currentPattern.particles} />
       )}
       
-      {/* Loading indicator */}
       {isGenerating && (
         <div className="absolute top-4 right-4 z-50">
           <motion.div
@@ -339,7 +313,6 @@ export function AIAnimationSystem({
         </div>
       )}
       
-      {/* Enhanced companion animation */}
       {currentPattern && (
         <motion.div
           className="absolute bottom-4 left-4 z-40"
@@ -372,7 +345,6 @@ export function AIAnimationSystem({
         </motion.div>
       )}
       
-      {/* Main content */}
       <div className="relative z-10">
         {children}
       </div>
@@ -393,7 +365,6 @@ export function useAIAnimation() {
   ) => {
     setTrigger({ type, emotion })
     
-    // Reset to idle after a delay
     setTimeout(() => {
       setTrigger({ type: 'idle', emotion: 'happy' })
     }, 500)
