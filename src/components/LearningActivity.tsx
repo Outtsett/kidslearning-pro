@@ -287,8 +287,8 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
             </div>
           </div>
 
-        {/* Progress Bar */}
-        <Card className="mb-3">
+          {/* Progress Bar */}
+          <Card className="mb-3">
           <CardContent className="p-2">
             <div className="flex items-center justify-between mb-1">
               <span className="font-body text-xs text-muted-foreground">Progress</span>
@@ -298,10 +298,10 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
             </div>
             <Progress value={progress} className="h-2" />
           </CardContent>
-        </Card>
+          </Card>
 
-        {/* Main Content - Flexible */}
-        <div className="flex-1 min-h-0 space-y-3">
+          {/* Main Content - Flexible */}
+          <div className="flex-1 min-h-0 space-y-3">
           {/* Companion Message */}
           <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-none">
             <CardContent className="p-3">
@@ -371,9 +371,9 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
                     className="font-heading px-6"
                   >
                     {currentQuestionIndex < questions.length - 1 ? (
-                      <>Next Question</>
+                      "Next Question"
                     ) : (
-                      <>Complete <CheckCircle className="w-4 h-4 ml-2" /></>
+                      <span>Complete <CheckCircle className="w-4 h-4 ml-2" /></span>
                     )}
                   </Button>
                 )}
