@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, CheckCircle, Star, Coins } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { ReadingRealm } from '@/components/reading/ReadingRealm'
+import { ScienceSafari } from '@/components/science/ScienceSafari'
 import type { UserProfile, Subject } from '@/App'
 import { useSessionTracking } from '@/hooks/useSessionTracking'
 import { toast } from 'sonner'
@@ -108,6 +109,17 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
   if (subject === 'reading') {
     return (
       <ReadingRealm
+        profile={profile}
+        onComplete={onComplete}
+        onBack={onBack}
+      />
+    )
+  }
+
+  // If this is a science activity, use the Science Safari
+  if (subject === 'science') {
+    return (
+      <ScienceSafari
         profile={profile}
         onComplete={onComplete}
         onBack={onBack}
