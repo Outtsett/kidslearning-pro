@@ -1,6 +1,5 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { gsap } from 'gsap'
 import type { AgeGroup } from '@/App'
 
 interface CompanionProps {
@@ -109,7 +108,6 @@ function BabyDragon({ message, emotion = 'happy', activity = 'idle' }: {
   const [isFlapping, setIsFlapping] = useState(false)
   const [showHearts, setShowHearts] = useState(false)
   const [aiPersonality, setAIPersonality] = useState('')
-  const dragonRef = useRef<HTMLDivElement>(null)
   const movement = useAIMovement(emotion, activity)
 
   // AI-generated personality responses
@@ -135,39 +133,20 @@ Keep it gentle and nurturing for young children.`
     generatePersonality()
   }, [emotion, activity])
 
-  // Enhanced GSAP animations based on AI movement
-  useEffect(() => {
-    if (!dragonRef.current) return
-
-    const element = dragonRef.current
-    const tl = gsap.timeline({ repeat: -1 })
-    
-    tl.to(element, {
-      x: movement.x * movement.intensity,
-      y: movement.y * movement.intensity,
-      rotation: movement.x * 0.1,
-      duration: 3 + Math.random() * 2,
-      ease: 'power2.inOut'
-    })
-    .to(element, {
-      x: -movement.x * movement.intensity * 0.5,
-      y: movement.y * movement.intensity * 0.3,
-      rotation: -movement.x * 0.1,
-      duration: 3 + Math.random() * 2,
-      ease: 'power2.inOut'
-    })
-    .to(element, {
-      x: 0,
-      y: 0,
-      rotation: 0,
-      duration: 2,
-      ease: 'power2.inOut'
-    })
-
-    return () => {
-      tl.kill()
+  // Animation variants for framer-motion instead of GSAP
+  const dragonVariants = {
+    idle: {
+      x: [0, movement.x * movement.intensity, -movement.x * movement.intensity * 0.5, 0],
+      y: [0, movement.y * movement.intensity, movement.y * movement.intensity * 0.3, 0],
+      rotate: [0, movement.x * 0.1, -movement.x * 0.1, 0],
+      transition: {
+        duration: 8,
+        ease: "easeInOut",
+        repeat: Infinity,
+        repeatType: "loop"
+      }
     }
-  }, [movement])
+  }
 
   useEffect(() => {
     const blinkInterval = setInterval(() => {
@@ -209,7 +188,11 @@ Keep it gentle and nurturing for young children.`
       </FloatingElements>
       
       <div className="flex items-center gap-4 relative z-10">
-        <div ref={dragonRef} className="relative">
+        <motion.div 
+          className="relative"
+          variants={dragonVariants}
+          animate="idle"
+        >
           {/* Dragon Body */}
           <div className={`w-16 h-16 bg-gradient-to-br ${emotionColors[emotion]} rounded-full relative shadow-lg transition-all duration-500`}>
             {/* Eyes */}
@@ -324,7 +307,7 @@ Keep it gentle and nurturing for young children.`
               </>
             )}
           </AnimatePresence>
-        </div>
+        </motion.div>
         
         <motion.div
           className="flex-1"
@@ -354,7 +337,6 @@ function RobotExplorer({ message, emotion = 'excited', activity = 'idle' }: {
   const [antennaGlow, setAntennaGlow] = useState(false)
   const [showData, setShowData] = useState(false)
   const [aiDialogue, setAIDialogue] = useState('')
-  const robotRef = useRef<HTMLDivElement>(null)
   const movement = useAIMovement(emotion, activity)
 
   // AI-generated robotic personality
@@ -380,39 +362,20 @@ Keep it playful and tech-themed for school-age children.`
     generateDialogue()
   }, [emotion, activity])
 
-  // Enhanced GSAP animations
-  useEffect(() => {
-    if (!robotRef.current) return
-
-    const element = robotRef.current
-    const tl = gsap.timeline({ repeat: -1 })
-    
-    tl.to(element, {
-      x: movement.x * movement.intensity,
-      y: movement.y * movement.intensity,
-      rotation: movement.x * 0.05,
-      duration: 2.5 + Math.random(),
-      ease: 'power1.inOut'
-    })
-    .to(element, {
-      x: -movement.x * movement.intensity * 0.7,
-      y: movement.y * movement.intensity * 0.5,
-      rotation: -movement.x * 0.05,
-      duration: 2.5 + Math.random(),
-      ease: 'power1.inOut'
-    })
-    .to(element, {
-      x: 0,
-      y: 0,
-      rotation: 0,
-      duration: 1.5,
-      ease: 'power1.inOut'
-    })
-
-    return () => {
-      tl.kill()
+  // Animation variants for framer-motion
+  const robotVariants = {
+    idle: {
+      x: [0, movement.x * movement.intensity, -movement.x * movement.intensity * 0.7, 0],
+      y: [0, movement.y * movement.intensity, movement.y * movement.intensity * 0.5, 0],
+      rotate: [0, movement.x * 0.05, -movement.x * 0.05, 0],
+      transition: {
+        duration: 6.5,
+        ease: "easeInOut",
+        repeat: Infinity,
+        repeatType: "loop"
+      }
     }
-  }, [movement])
+  }
 
   useEffect(() => {
     const scanInterval = setInterval(() => {
@@ -454,7 +417,11 @@ Keep it playful and tech-themed for school-age children.`
       </FloatingElements>
       
       <div className="flex items-center gap-4 relative z-10">
-        <div ref={robotRef} className="relative">
+        <motion.div 
+          className="relative"
+          variants={robotVariants}
+          animate="idle"
+        >
           {/* Robot Body */}
           <div className={`w-16 h-16 bg-gradient-to-br ${emotionColors[emotion]} rounded-lg relative shadow-lg transition-all duration-500`}>
             {/* Antenna */}
@@ -575,7 +542,7 @@ Keep it playful and tech-themed for school-age children.`
               </div>
             )}
           </AnimatePresence>
-        </div>
+        </motion.div>
         
         <motion.div
           className="flex-1"
@@ -605,7 +572,6 @@ function WiseGuide({ message, emotion = 'encouraging', activity = 'idle' }: {
   const [runesActive, setRunesActive] = useState(false)
   const [showWisdom, setShowWisdom] = useState(false)
   const [aiWisdom, setAIWisdom] = useState('')
-  const guideRef = useRef<HTMLDivElement>(null)
   const movement = useAIMovement(emotion, activity)
 
   // AI-generated wisdom phrases
@@ -631,39 +597,20 @@ Keep it mystical but relatable for older children.`
     generateWisdom()
   }, [emotion, activity])
 
-  // Enhanced GSAP animations
-  useEffect(() => {
-    if (!guideRef.current) return
-
-    const element = guideRef.current
-    const tl = gsap.timeline({ repeat: -1 })
-    
-    tl.to(element, {
-      x: movement.x * movement.intensity,
-      y: movement.y * movement.intensity,
-      rotation: movement.x * 0.03,
-      duration: 4 + Math.random(),
-      ease: 'power2.inOut'
-    })
-    .to(element, {
-      x: -movement.x * movement.intensity * 0.6,
-      y: movement.y * movement.intensity * 0.4,
-      rotation: -movement.x * 0.03,
-      duration: 4 + Math.random(),
-      ease: 'power2.inOut'
-    })
-    .to(element, {
-      x: 0,
-      y: 0,
-      rotation: 0,
-      duration: 3,
-      ease: 'power2.inOut'
-    })
-
-    return () => {
-      tl.kill()
+  // Animation variants for framer-motion
+  const guideVariants = {
+    idle: {
+      x: [0, movement.x * movement.intensity, -movement.x * movement.intensity * 0.6, 0],
+      y: [0, movement.y * movement.intensity, movement.y * movement.intensity * 0.4, 0],
+      rotate: [0, movement.x * 0.03, -movement.x * 0.03, 0],
+      transition: {
+        duration: 11,
+        ease: "easeInOut",
+        repeat: Infinity,
+        repeatType: "loop"
+      }
     }
-  }, [movement])
+  }
 
   useEffect(() => {
     const orbInterval = setInterval(() => {
@@ -705,7 +652,11 @@ Keep it mystical but relatable for older children.`
       </FloatingElements>
       
       <div className="flex items-center gap-4 relative z-10">
-        <div ref={guideRef} className="relative">
+        <motion.div 
+          className="relative"
+          variants={guideVariants}
+          animate="idle"
+        >
           {/* Wizard/Guide figure */}
           <div className={`w-16 h-16 bg-gradient-to-br ${emotionColors[emotion]} rounded-full relative shadow-lg transition-all duration-500`}>
             {/* Enhanced Hat with emotion-based effects */}
@@ -851,7 +802,7 @@ Keep it mystical but relatable for older children.`
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </motion.div>
         
         <motion.div
           className="flex-1"

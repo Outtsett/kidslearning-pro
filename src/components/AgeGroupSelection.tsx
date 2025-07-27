@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { motion } from 'framer-motion'
 import { Heart } from '@phosphor-icons/react'
-import { gsap } from 'gsap'
+import { gsap } from 'gsap/dist/gsap'
 import type { AgeGroup } from '@/App'
 
 interface AgeGroupSelectionProps {

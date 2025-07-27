@@ -8,7 +8,7 @@ import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { CustomizationStore } from '@/components/CustomizationStore'
 import { CompanionMessage } from '@/components/Companions'
 import { AIAnimationSystem, useAIAnimation } from '@/components/AIAnimationSystem'
-import { gsap } from 'gsap'
+import { gsap } from 'gsap/dist/gsap'
 import type { UserProfile, Subject } from '@/App'
 
 interface DashboardProps {
