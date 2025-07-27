@@ -143,7 +143,7 @@ Keep it gentle and nurturing for young children.`
         duration: 8,
         ease: "easeInOut",
         repeat: Infinity,
-        repeatType: "loop"
+        repeatType: "loop" as const
       }
     }
   }
@@ -372,7 +372,7 @@ Keep it playful and tech-themed for school-age children.`
         duration: 6.5,
         ease: "easeInOut",
         repeat: Infinity,
-        repeatType: "loop"
+        repeatType: "loop" as const
       }
     }
   }
@@ -607,7 +607,7 @@ Keep it mystical but relatable for older children.`
         duration: 11,
         ease: "easeInOut",
         repeat: Infinity,
-        repeatType: "loop"
+        repeatType: "loop" as const
       }
     }
   }

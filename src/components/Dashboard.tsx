@@ -6,9 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Calculator, Flask, Book, Palette, Coins, Settings, Star, ArrowLeft } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { CustomizationStore } from '@/components/CustomizationStore'
-import { CompanionSafe } from '@/components/CompanionSafe'
-import { AIAnimationSystem, useAIAnimation } from '@/components/AIAnimationSystem'
-import { gsap } from 'gsap/dist/gsap'
+import { CompanionMessage } from '@/components/CompanionSimple'
 import type { UserProfile, Subject } from '@/App'
 
 interface DashboardProps {
@@ -227,49 +225,8 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
   const [companionEmotion, setCompanionEmotion] = useState<'happy' | 'excited' | 'proud' | 'encouraging' | 'thinking'>('happy')
   const [companionActivity, setCompanionActivity] = useState<'idle' | 'celebrating' | 'explaining' | 'waiting'>('idle')
-  const { trigger, triggerAnimation } = useAIAnimation()
   const containerRef = useRef<HTMLDivElement>(null)
-  const subjectCardsRef = useRef<HTMLDivElement[]>([])
   const companionRef = useRef<HTMLDivElement>(null)
-
-  // Animation setup
-  useEffect(() => {
-    if (containerRef.current) {
-      gsap.fromTo(containerRef.current, 
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.6, ease: "easeOut" }
-      )
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!selectedSubject && subjectCardsRef.current.length > 0) {
-      gsap.fromTo(subjectCardsRef.current,
-        { opacity: 0, y: 30, scale: 0.9 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          scale: 1, 
-          duration: 0.5, 
-          stagger: 0.1,
-          ease: "backOut"
-        }
-      )
-    }
-  }, [selectedSubject])
-
-  // Animate companion float
-  useEffect(() => {
-    if (companionRef.current) {
-      gsap.to(companionRef.current, {
-        y: -10,
-        duration: 2,
-        repeat: -1,
-        yoyo: true,
-        ease: "easeInOut"
-      })
-    }
-  }, [])
 
   // AI-powered companion emotion updates
   useEffect(() => {
@@ -337,14 +294,7 @@ Return one word: happy, excited, proud, encouraging, or thinking`
   }
 
   return (
-    <AIAnimationSystem
-      ageGroup={profile.ageGroup}
-      subject={selectedSubject || 'math'}
-      userProgress={Object.values(profile.progress).reduce((sum, val) => sum + val, 0) / 4}
-      emotion={companionEmotion}
-      trigger={trigger.type}
-    >
-      <div ref={containerRef} className={`h-screen bg-gradient-to-br ${theme.background} flex flex-col`}>
+    <div ref={containerRef} className={`h-screen bg-gradient-to-br ${theme.background} flex flex-col`}>
         {/* Top Bar - Fixed Height */}
         <div className="flex justify-between items-center bg-white/80 rounded-2xl p-3 shadow-lg m-3 mb-2">
           <div className="flex items-center gap-3">
@@ -397,7 +347,7 @@ Return one word: happy, excited, proud, encouraging, or thinking`
               {/* 3D Companion */}
               <Card ref={companionRef} className="bg-gradient-to-r from-primary/20 to-secondary/20 border-none flex-shrink-0">
                 <CardContent className="p-4 flex justify-center">
-                  <CompanionSafe 
+                  <CompanionMessage 
                     ageGroup={profile.ageGroup} 
                     name={profile.name}
                     emotion={companionEmotion}
@@ -413,23 +363,10 @@ Return one word: happy, excited, proud, encouraging, or thinking`
                   return (
                     <Card 
                       key={subject.id}
-                      ref={(el) => {
-                        if (el) subjectCardsRef.current[index] = el
-                      }}
                       className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 flex flex-col min-h-0"
                       onClick={() => {
-                        // Trigger AI animation for subject selection
-                        triggerAnimation('activity_start', 'excited')
                         setCompanionActivity('explaining')
                         setCompanionEmotion('excited')
-                        
-                        gsap.to(subjectCardsRef.current[index], {
-                          scale: 0.95,
-                          duration: 0.1,
-                          yoyo: true,
-                          repeat: 1,
-                          ease: "easeOut"
-                        })
                         setTimeout(() => setSelectedSubject(subject.id), 100)
                       }}
                     >
@@ -484,8 +421,6 @@ Return one word: happy, excited, proud, encouraging, or thinking`
                     key={activity.id}
                     className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 flex flex-col"
                     onClick={() => {
-                      // Trigger celebration animation when starting activity
-                      triggerAnimation('activity_start', 'excited')
                       setCompanionActivity('celebrating')
                       setCompanionEmotion('excited')
                       onActivityStart(selectedSubject, activity.id)
@@ -524,6 +459,5 @@ Return one word: happy, excited, proud, encouraging, or thinking`
           </Button>
         </div>
       </div>
-    </AIAnimationSystem>
   )
 }

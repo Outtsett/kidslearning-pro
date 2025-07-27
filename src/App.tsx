@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
+import { ErrorFallback } from '@/components/ErrorFallback'
 import { AgeGroupSelection } from '@/components/AgeGroupSelection'
 import { Dashboard } from '@/components/Dashboard'
 import { LearningActivity } from '@/components/LearningActivity'
@@ -79,10 +80,10 @@ function App() {
 
   const handleActivityComplete = (coinsEarned: number) => {
     if (profile) {
-      setProfile((current) => ({
-        ...current!,
-        coins: current!.coins + coinsEarned
-      }))
+      setProfile((current) => current ? {
+        ...current,
+        coins: current.coins + coinsEarned
+      } : current)
     }
     setCurrentActivity({ subject: null, activityId: null })
   }
@@ -104,50 +105,56 @@ function App() {
     setProfile(null)
   }
 
-  // If showing companion test, show that
-  if (showCompanionTest) {
-    return <CompanionTest />
-  }
-
-  // If no age group is selected, show age group selection
-  if (!selectedAgeGroup) {
-    return <AgeGroupSelection onAgeGroupSelected={handleAgeGroupSelected} />
-  }
-
-  if (showParentDashboard) {
-    return (
-      <ParentDashboard
-        profile={profile}
-        onBack={handleBackFromParentDashboard}
-      />
-    )
-  }
-
-  if (currentActivity.subject && currentActivity.activityId) {
-    return (
-      <LearningActivity
-        subject={currentActivity.subject}
-        activityId={currentActivity.activityId}
-        profile={profile}
-        onComplete={handleActivityComplete}
-        onBack={handleBackToDashboard}
-      />
-    )
-  }
-
-  // Safety check - ensure we have both age group and profile
-  if (!profile) {
-    return <div>Loading profile...</div>
-  }
-
   return (
-    <Dashboard
-      profile={profile}
-      onProfileUpdate={setProfile}
-      onActivityStart={handleActivityStart}
-      onShowParentDashboard={handleShowParentDashboard}
-      onBackToAgeSelection={handleBackToAgeSelection}
-    />
+    <ErrorFallback>
+      {(() => {
+        // If showing companion test, show that
+        if (showCompanionTest) {
+          return <CompanionTest />
+        }
+
+        // If no age group is selected, show age group selection
+        if (!selectedAgeGroup) {
+          return <AgeGroupSelection onAgeGroupSelected={handleAgeGroupSelected} />
+        }
+
+        if (showParentDashboard) {
+          return (
+            <ParentDashboard
+              profile={profile}
+              onBack={handleBackFromParentDashboard}
+            />
+          )
+        }
+
+        if (currentActivity.subject && currentActivity.activityId) {
+          return (
+            <LearningActivity
+              subject={currentActivity.subject}
+              activityId={currentActivity.activityId}
+              profile={profile}
+              onComplete={handleActivityComplete}
+              onBack={handleBackToDashboard}
+            />
+          )
+        }
+
+        // Safety check - ensure we have both age group and profile
+        if (!profile) {
+          return <div>Loading profile...</div>
+        }
+
+        return (
+          <Dashboard
+            profile={profile}
+            onProfileUpdate={setProfile}
+            onActivityStart={handleActivityStart}
+            onShowParentDashboard={handleShowParentDashboard}
+            onBackToAgeSelection={handleBackToAgeSelection}
+          />
+        )
+      })()}
+    </ErrorFallback>
   )
 }
 
