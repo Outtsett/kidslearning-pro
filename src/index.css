@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
 
-/* Map CSS variables to Tailwind classes */
 @layer base {
   * {
     border-color: var(--border);
