@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { motion } from 'framer-motion'
 import { Heart } from '@phosphor-icons/react'
+import { gsap } from 'gsap'
 import type { AgeGroup } from '@/App'
 
 interface AgeGroupSelectionProps {
@@ -59,10 +60,35 @@ const AGE_GROUPS = [
 
 export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps) {
   const [showDetails, setShowDetails] = useState<AgeGroup | null>(null)
+  const [selectedAge, setSelectedAge] = useState<AgeGroup | null>(null)
 
   const handleAgeGroupClick = (ageGroup: AgeGroup) => {
-    onAgeGroupSelected(ageGroup)
+    setSelectedAge(ageGroup)
+    
+    // Animate selection with GSAP
+    gsap.to(`.age-card-${ageGroup}`, {
+      scale: 1.1,
+      duration: 0.2,
+      ease: "power2.out",
+      onComplete: () => {
+        gsap.to(`.age-card-${ageGroup}`, {
+          scale: 1,
+          duration: 0.2,
+          ease: "power2.out"
+        })
+      }
+    })
+
+    // Auto-navigate after a brief delay
+    setTimeout(() => {
+      onAgeGroupSelected(ageGroup)
+    }, 600)
   }
+
+  // Add scroll restoration on mount
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-primary/20 via-lavender/20 to-secondary/20 transition-all duration-1000 overflow-y-auto`}>
@@ -84,7 +110,7 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
           </div>
         </motion.div>
 
-        {/* Age Group Selection - Flexible Height */}
+        {/* Age Group Selection - Scrollable */}
         <div className="flex-1 flex flex-col">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -111,7 +137,7 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
                 className="flex"
               >
                 <Card 
-                  className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-lg ${group.cardColors} flex flex-col w-full h-full`}
+                  className={`age-card-${group.id} cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-lg ${group.cardColors} flex flex-col w-full h-full ${selectedAge === group.id ? 'ring-4 ring-primary ring-opacity-50' : ''}`}
                   onClick={() => handleAgeGroupClick(group.id)}
                 >
                   <CardHeader className="text-center pb-2 flex-shrink-0">
@@ -162,6 +188,18 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
                         </motion.div>
                       )}
                     </div>
+
+                    {selectedAge === group.id && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="mt-3 p-2 bg-primary/10 rounded-lg"
+                      >
+                        <p className="text-xs font-bold text-primary">
+                          Great choice! Loading your adventure...
+                        </p>
+                      </motion.div>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>

@@ -59,6 +59,7 @@ export function useSampleData() {
     // Sort sessions by date (newest first)
     sampleSessions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     setSessions(sampleSessions)
+    return sampleSessions
   }
 
   return { generateSampleSessions }

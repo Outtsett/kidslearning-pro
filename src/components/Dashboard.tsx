@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -7,6 +7,7 @@ import { Calculator, Flask, Book, Palette, Coins, Settings, Star, ArrowLeft } fr
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { CustomizationStore } from '@/components/CustomizationStore'
 import { CompanionMessage } from '@/components/Companions'
+import { gsap } from 'gsap'
 import type { UserProfile, Subject } from '@/App'
 
 interface DashboardProps {
@@ -223,6 +224,48 @@ const ACTIVITIES_BY_AGE = {
 export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowParentDashboard, onBackToAgeSelection }: DashboardProps) {
   const [showCustomization, setShowCustomization] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const subjectCardsRef = useRef<HTMLDivElement[]>([])
+  const companionRef = useRef<HTMLDivElement>(null)
+
+  // Animation setup
+  useEffect(() => {
+    if (containerRef.current) {
+      gsap.fromTo(containerRef.current, 
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }
+      )
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!selectedSubject && subjectCardsRef.current.length > 0) {
+      gsap.fromTo(subjectCardsRef.current,
+        { opacity: 0, y: 30, scale: 0.9 },
+        { 
+          opacity: 1, 
+          y: 0, 
+          scale: 1, 
+          duration: 0.5, 
+          stagger: 0.1,
+          ease: "back.out(1.7)"
+        }
+      )
+    }
+  }, [selectedSubject])
+
+  // Animate companion float
+  useEffect(() => {
+    if (companionRef.current) {
+      gsap.to(companionRef.current, {
+        y: -10,
+        duration: 2,
+        repeat: -1,
+        yoyo: true,
+        ease: "power2.inOut"
+      })
+    }
+  }, [])
 
   // Safety check - return early if profile is not available
   if (!profile) {
@@ -259,154 +302,164 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
   }
 
   return (
-    <div className={`h-screen bg-gradient-to-br ${theme.background} overflow-hidden`}>
-      <div className="h-full flex flex-col p-3">
-        {/* Top Bar - Fixed Height */}
-        <div className="flex justify-between items-center bg-white/80 rounded-2xl p-3 shadow-lg mb-3">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onBackToAgeSelection}
-              className="font-heading flex items-center gap-1"
-            >
-              <ArrowLeft weight="bold" className="w-4 h-4" />
-              Age
-            </Button>
-            <AvatarDisplay avatar={profile.avatar} size="small" />
-            <div>
-              <h1 className="font-heading text-lg font-bold text-foreground">
-                Hi {profile.name}!
-              </h1>
-              <Badge variant="secondary" className="text-xs">
-                Age {profile.ageGroup}
-              </Badge>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="flex items-center gap-1 p-1">
-              <Coins className="w-3 h-3 text-yellow-600" weight="fill" />
-              <span className="font-heading font-semibold text-sm">{profile.coins}</span>
+    <div ref={containerRef} className={`h-screen bg-gradient-to-br ${theme.background} flex flex-col`}>
+      {/* Top Bar - Fixed Height */}
+      <div className="flex justify-between items-center bg-white/80 rounded-2xl p-3 shadow-lg m-3 mb-2">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onBackToAgeSelection}
+            className="font-heading flex items-center gap-1"
+          >
+            <ArrowLeft weight="bold" className="w-4 h-4" />
+            Age
+          </Button>
+          <AvatarDisplay avatar={profile.avatar} size="small" />
+          <div>
+            <h1 className="font-heading text-lg font-bold text-foreground">
+              Hi {profile.name}!
+            </h1>
+            <Badge variant="secondary" className="text-xs">
+              Age {profile.ageGroup}
             </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowCustomization(true)}
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onShowParentDashboard}
-              className="hidden sm:flex"
-            >
-              📊
-            </Button>
           </div>
         </div>
-
-        {/* Main Content Area - Flexible Height */}
-        <div className="flex-1 min-h-0">
-          {!selectedSubject ? (
-            <div className="h-full grid grid-rows-[auto_1fr] gap-3">
-              {/* Companion Message */}
-              <Card className="bg-gradient-to-r from-primary/20 to-secondary/20 border-none">
-                <CardContent className="p-4">
-                  <CompanionMessage ageGroup={profile.ageGroup} name={profile.name} />
-                </CardContent>
-              </Card>
-
-              {/* Subject Grid */}
-              <div className="grid grid-cols-2 gap-3 h-full">
-                {theme.subjects.map((subject) => {
-                  const progress = profile.progress[subject.id]
-                  return (
-                    <Card 
-                      key={subject.id}
-                      className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 flex flex-col"
-                      onClick={() => setSelectedSubject(subject.id)}
-                    >
-                      <CardContent className="p-4 flex flex-col items-center justify-center h-full text-center">
-                        <div className={`w-12 h-12 rounded-full ${subject.color} flex items-center justify-center mb-2`}>
-                          <subject.icon className="w-6 h-6" weight="bold" />
-                        </div>
-                        <h3 className="font-heading font-semibold text-foreground mb-2">
-                          {subject.name}
-                        </h3>
-                        <p className="font-body text-xs text-muted-foreground mb-2 line-clamp-2">
-                          {subject.description}
-                        </p>
-                        <Progress 
-                          value={progress} 
-                          className="h-2 w-full mb-1"
-                        />
-                        <p className="text-xs text-muted-foreground">{progress}%</p>
-                        <Badge variant="outline" className="mt-2 text-xs">
-                          {activities[subject.id].length} Activities
-                        </Badge>
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-              </div>
-            </div>
-          ) : (
-            <div className="h-full flex flex-col">
-              {/* Activity Header */}
-              <div className="flex items-center gap-3 mb-3">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setSelectedSubject(null)}
-                >
-                  ← Back
-                </Button>
-                <h2 className="font-heading text-lg font-semibold text-foreground">
-                  {theme.subjects.find(s => s.id === selectedSubject)?.name} Activities
-                </h2>
-              </div>
-
-              {/* Activities Grid */}
-              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 overflow-hidden">
-                {activities[selectedSubject].map((activity) => (
-                  <Card 
-                    key={activity.id}
-                    className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 flex flex-col"
-                    onClick={() => onActivityStart(selectedSubject, activity.id)}
-                  >
-                    <CardContent className="p-4 flex flex-col justify-between h-full">
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-heading text-sm font-semibold">
-                            {activity.name}
-                          </h3>
-                          <div className="flex">
-                            {getDifficultyStars(activity.difficulty)}
-                          </div>
-                        </div>
-                      </div>
-                      <Button size="sm" className="w-full font-heading mt-auto">
-                        Start
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Parent Dashboard Access - Mobile Only */}
-        <div className="sm:hidden mt-2">
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="flex items-center gap-1 p-1">
+            <Coins className="w-3 h-3 text-yellow-600" weight="fill" />
+            <span className="font-heading font-semibold text-sm">{profile.coins}</span>
+          </Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowCustomization(true)}
+          >
+            <Settings className="w-4 h-4" />
+          </Button>
           <Button
             variant="secondary"
+            size="sm"
             onClick={onShowParentDashboard}
-            className="w-full h-8 text-xs"
+            className="hidden sm:flex"
           >
-            📊 Parent View
+            📊
           </Button>
         </div>
+      </div>
+
+      {/* Main Content Area - Uses remaining space */}
+      <div className="flex-1 px-3 pb-3 min-h-0">
+        {!selectedSubject ? (
+          <div className="h-full flex flex-col gap-3">
+            {/* Companion Message */}
+            <Card ref={companionRef} className="bg-gradient-to-r from-primary/20 to-secondary/20 border-none flex-shrink-0">
+              <CardContent className="p-4">
+                <CompanionMessage ageGroup={profile.ageGroup} name={profile.name} />
+              </CardContent>
+            </Card>
+
+            {/* Subject Grid - Takes remaining space */}
+            <div className="flex-1 grid grid-cols-2 gap-3 min-h-0">
+              {theme.subjects.map((subject, index) => {
+                const progress = profile.progress[subject.id]
+                return (
+                  <Card 
+                    key={subject.id}
+                    ref={(el) => {
+                      if (el) subjectCardsRef.current[index] = el
+                    }}
+                    className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 flex flex-col min-h-0"
+                    onClick={() => {
+                      gsap.to(subjectCardsRef.current[index], {
+                        scale: 0.95,
+                        duration: 0.1,
+                        yoyo: true,
+                        repeat: 1,
+                        ease: "power2.out"
+                      })
+                      setTimeout(() => setSelectedSubject(subject.id), 100)
+                    }}
+                  >
+                    <CardContent className="p-3 flex flex-col items-center justify-center h-full text-center">
+                      <div className={`w-10 h-10 rounded-full ${subject.color} flex items-center justify-center mb-2`}>
+                        <subject.icon className="w-5 h-5" weight="bold" />
+                      </div>
+                      <h3 className="font-heading font-semibold text-foreground mb-1 text-sm">
+                        {subject.name}
+                      </h3>
+                      <p className="font-body text-xs text-muted-foreground mb-2 line-clamp-2">
+                        {subject.description}
+                      </p>
+                      <Progress 
+                        value={progress} 
+                        className="h-1.5 w-full mb-1"
+                      />
+                      <p className="text-xs text-muted-foreground">{progress}%</p>
+                      <Badge variant="outline" className="mt-1 text-xs">
+                        {activities[subject.id].length} Activities
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className="h-full flex flex-col">
+            {/* Activity Header */}
+            <div className="flex items-center gap-3 mb-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setSelectedSubject(null)}
+              >
+                ← Back
+              </Button>
+              <h2 className="font-heading text-lg font-semibold text-foreground">
+                {theme.subjects.find(s => s.id === selectedSubject)?.name} Activities
+              </h2>
+            </div>
+
+            {/* Activities Grid */}
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto">
+              {activities[selectedSubject].map((activity) => (
+                <Card 
+                  key={activity.id}
+                  className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 flex flex-col"
+                  onClick={() => onActivityStart(selectedSubject, activity.id)}
+                >
+                  <CardContent className="p-4 flex flex-col justify-between h-full">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-heading text-sm font-semibold">
+                          {activity.name}
+                        </h3>
+                        <div className="flex">
+                          {getDifficultyStars(activity.difficulty)}
+                        </div>
+                      </div>
+                    </div>
+                    <Button size="sm" className="w-full font-heading mt-auto">
+                      Start
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Parent Dashboard Access - Mobile Only */}
+      <div className="sm:hidden px-3 pb-3">
+        <Button
+          variant="secondary"
+          onClick={onShowParentDashboard}
+          className="w-full h-8 text-xs"
+        >
+          📊 Parent View
+        </Button>
       </div>
     </div>
   )

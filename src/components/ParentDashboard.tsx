@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import React from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { gsap } from 'gsap'
 import { 
   BarChart3, 
   Calendar, 
@@ -90,7 +91,7 @@ interface DifficultyTrend {
   recommendation: string
 }
 
-function PasswordProtection({ onAuthenticated }: { onAuthenticated: () => void }) {
+function PasswordProtection({ onAuthenticated, onBack }: { onAuthenticated: () => void, onBack: () => void }) {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [parentPassword] = useKV<string>('parent-password', 'parent123')
@@ -126,8 +127,19 @@ function PasswordProtection({ onAuthenticated }: { onAuthenticated: () => void }
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <Shield size={32} className="text-primary" />
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="p-2"
+            >
+              <ArrowLeft size={20} />
+            </Button>
+            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+              <Shield size={32} className="text-primary" />
+            </div>
+            <div className="w-10"></div>
           </div>
           <CardTitle className="font-heading text-2xl">Parent Dashboard</CardTitle>
           <CardDescription>
@@ -190,10 +202,38 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
     { subject: 'art', targetMinutes: 45, targetActivities: 3, currentMinutes: 0, currentActivities: 0 }
   ])
   const { generateSampleSessions } = useSampleData()
+  const dashboardRef = useRef<HTMLDivElement>(null)
+  const cardsRef = useRef<HTMLDivElement[]>([])
+
+  // Animation setup
+  useEffect(() => {
+    if (isAuthenticated && dashboardRef.current) {
+      gsap.fromTo(dashboardRef.current,
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }
+      )
+    }
+  }, [isAuthenticated])
+
+  useEffect(() => {
+    if (isAuthenticated && cardsRef.current.length > 0) {
+      gsap.fromTo(cardsRef.current,
+        { opacity: 0, y: 20, scale: 0.9 },
+        { 
+          opacity: 1, 
+          y: 0, 
+          scale: 1, 
+          duration: 0.6, 
+          stagger: 0.1,
+          ease: "back.out(1.7)"
+        }
+      )
+    }
+  }, [isAuthenticated, sessions.length])
 
   // Show password protection first
   if (!isAuthenticated) {
-    return <PasswordProtection onAuthenticated={() => setIsAuthenticated(true)} />
+    return <PasswordProtection onAuthenticated={() => setIsAuthenticated(true)} onBack={onBack} />
   }
 
   // Safety check for profile
@@ -415,13 +455,12 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
   }
 
   const addSampleData = () => {
-    const newSessions = generateSampleSessions(profile?.ageGroup || '6-9')
-    // This would typically save to useKV, but since we're in demo mode, just show success
-    toast.success(`Added ${newSessions.length} sample learning sessions`)
+    generateSampleSessions()
+    toast.success(`Added sample learning sessions for demo`)
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-background via-card to-muted overflow-hidden">
+    <div ref={dashboardRef} className="h-screen bg-gradient-to-br from-background via-card to-muted overflow-hidden">
       <div className="h-full flex flex-col p-4">
         {/* Header - Fixed */}
         <div className="flex items-center justify-between mb-4">
@@ -483,7 +522,7 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
             <TabsContent value="overview" className="space-y-4">
               {/* Quick Stats */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
+                <Card ref={(el) => { if (el) cardsRef.current[0] = el }}>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-blue-100 rounded-lg">
@@ -497,7 +536,7 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card ref={(el) => { if (el) cardsRef.current[1] = el }}>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-green-100 rounded-lg">
@@ -511,7 +550,7 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card ref={(el) => { if (el) cardsRef.current[2] = el }}>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-purple-100 rounded-lg">
@@ -525,7 +564,7 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card ref={(el) => { if (el) cardsRef.current[3] = el }}>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-orange-100 rounded-lg">
@@ -541,7 +580,7 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
               </div>
 
               {/* Subject Performance Overview */}
-              <Card>
+              <Card ref={(el) => { if (el) cardsRef.current[4] = el }}>
                 <CardHeader>
                   <CardTitle>Subject Performance (Last 7 Days)</CardTitle>
                   <CardDescription>
