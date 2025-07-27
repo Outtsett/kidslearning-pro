@@ -5,7 +5,8 @@ import { AgeGroupSelection } from '@/components/AgeGroupSelection'
 import { Dashboard } from '@/components/Dashboard'
 import { LearningActivity } from '@/components/LearningActivity'
 import { ParentDashboard } from '@/components/ParentDashboard'
-import { CompanionTest } from '@/components/CompanionTest'
+import { CompanionOptimized } from '@/components/CompanionOptimized'
+import { useProgressiveDifficulty } from '@/hooks/useProgressiveDifficulty'
 
 export type AgeGroup = '3-5' | '6-9' | '10-12'
 export type Subject = 'math' | 'science' | 'reading' | 'art'
@@ -44,6 +45,9 @@ function App() {
   const [currentActivity, setCurrentActivity] = useState<ActivityState>({ subject: null, activityId: null })
   const [showParentDashboard, setShowParentDashboard] = useState(false)
   const [showCompanionTest, setShowCompanionTest] = useState(false)
+  
+  // Initialize progressive difficulty system
+  const difficultySystem = useProgressiveDifficulty(profile)
 
   // Add a secret key combination to show companion test
   useEffect(() => {
@@ -122,7 +126,27 @@ function App() {
       {(() => {
         // If showing companion test, show that
         if (showCompanionTest) {
-          return <CompanionTest />
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl p-8 shadow-xl max-w-md">
+                <h2 className="font-heading text-xl font-bold text-center mb-4">Companion Test</h2>
+                <CompanionOptimized
+                  ageGroup={selectedAgeGroup || '3-5'}
+                  name="Test Companion"
+                  emotion="happy"
+                  activity="idle"
+                  showSpeech={true}
+                  speechText="Hello! I'm your learning companion! 🌟"
+                />
+                <button 
+                  onClick={() => setShowCompanionTest(false)}
+                  className="mt-4 w-full py-2 px-4 bg-primary text-white rounded-lg font-heading"
+                >
+                  Close Test
+                </button>
+              </div>
+            </div>
+          )
         }
 
         // If no age group is selected, show age group selection
@@ -145,8 +169,15 @@ function App() {
               subject={currentActivity.subject}
               activityId={currentActivity.activityId}
               profile={profile}
-              onComplete={handleActivityComplete}
+              onComplete={(coinsEarned, performanceData) => {
+                // Record performance for difficulty adjustment
+                if (performanceData) {
+                  difficultySystem.recordPerformance(performanceData)
+                }
+                handleActivityComplete(coinsEarned)
+              }}
               onBack={handleBackToDashboard}
+              difficultyLevel={difficultySystem.getDifficultyLevel(currentActivity.subject)}
             />
           )
         }
@@ -163,6 +194,7 @@ function App() {
             onActivityStart={handleActivityStart}
             onShowParentDashboard={handleShowParentDashboard}
             onBackToAgeSelection={handleBackToAgeSelection}
+            difficultySystem={difficultySystem}
           />
         )
       })()}

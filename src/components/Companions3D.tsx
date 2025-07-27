@@ -55,7 +55,8 @@ function BabyDragon3D({ emotion, activity }: { emotion: string; activity: string
   useEffect(() => {
     const blinkInterval = setInterval(() => {
       setIsBlinking(true)
-      setTimeout(() => setIsBlinking(false), 150)
+      const timeoutId = setTimeout(() => setIsBlinking(false), 150)
+      return () => clearTimeout(timeoutId)
     }, 2000 + Math.random() * 3000)
     
     return () => clearInterval(blinkInterval)

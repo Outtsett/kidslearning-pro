@@ -1,21 +1,51 @@
+@import 'tailwindcss';
+@import "tw-animate-css";
+
 /* KidsLearning Pro custom styles */
 
 /* Custom color variables for the kids app */
 :root {
-  /* Kids-friendly theme colors - overriding defaults */
+  /* Basic theme structure */
+  --background: oklch(0.98 0.01 120);
+  --foreground: oklch(0.2 0.02 85);
+  --card: oklch(0.96 0.01 120);
+  --card-foreground: oklch(0.25 0.02 85);
+  --popover: oklch(0.96 0.01 120);
+  --popover-foreground: oklch(0.25 0.02 85);
+  
+  /* Kids-friendly theme colors */
   --primary: oklch(0.75 0.08 140);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.7 0.12 45);
   --secondary-foreground: oklch(1 0 0);
   --accent: oklch(0.75 0.15 25);
   --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.6 0.15 15);
+  --destructive-foreground: oklch(1 0 0);
+  
+  /* Supporting colors */
+  --muted: oklch(0.92 0.02 120);
+  --muted-foreground: oklch(0.5 0.02 85);
+  --border: oklch(0.88 0.02 120);
+  --input: oklch(0.88 0.02 120);
+  --ring: oklch(0.75 0.08 140);
   
   --lavender: oklch(0.8 0.06 280);
   --lavender-foreground: oklch(0.25 0.02 85);
 
+  /* Border radius */
+  --radius: 0.5rem;
+
   /* Font definitions */
   --font-heading: 'Fredoka', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
+  --font-sans: "Cabin";
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
 }
 
 /* Custom utility classes */
@@ -32,4 +62,8 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+body{
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }

@@ -17,8 +17,16 @@ interface LearningActivityProps {
   subject: Subject
   activityId: string
   profile: UserProfile
-  onComplete: (coinsEarned: number) => void
+  onComplete: (coinsEarned: number, performanceData?: {
+    subject: Subject
+    accuracy: number
+    timeSpent: number
+    hintsUsed: number
+    attemptsCount: number
+    difficulty: number
+  }) => void
   onBack: () => void
+  difficultyLevel?: number
 }
 
 interface Question {
@@ -130,7 +138,7 @@ const ENCOURAGEMENT_MESSAGES = [
   "What a brilliant mind you have!"
 ]
 
-export function LearningActivity({ subject, activityId, profile, onComplete, onBack }: LearningActivityProps) {
+export function LearningActivity({ subject, activityId, profile, onComplete, onBack, difficultyLevel = 1 }: LearningActivityProps) {
   // If this is a reading activity, use the Reading Realm
   if (subject === 'reading') {
     return (
@@ -164,6 +172,8 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
   const [showHint, setShowHint] = useState(false)
   const [questionTimes, setQuestionTimes] = useState<number[]>([])
+  const [hintsUsed, setHintsUsed] = useState(0)
+  const [attempts, setAttempts] = useState(0)
   
   const { recordSession } = useSessionTracking()
   const { trigger, triggerAnimation } = useAIAnimation()
@@ -235,6 +245,7 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
     setIsCorrect(correct)
     setShowFeedback(true)
     setTimeRemaining(null) // Stop timer
+    setAttempts(prev => prev + 1)
     
     if (correct) {
       setScore(score + 1)
@@ -252,6 +263,7 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
       setSelectedAnswer('')
       setShowFeedback(false)
       setTimeRemaining(null)
+      setShowHint(false)
     } else {
       handleCompleteActivity()
     }
@@ -265,6 +277,16 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
     const totalDuration = Math.round((Date.now() - startTime) / 60000) // Convert to minutes
     const totalTimeSpent = questionTimes.reduce((sum, time) => sum + time, 0)
     const conceptsEncountered = questions.map(q => q.concept)
+    
+    // Prepare performance data for difficulty adjustment
+    const performanceData = {
+      subject,
+      accuracy: percentage / 100,
+      timeSpent: totalTimeSpent,
+      hintsUsed: hintsUsed,
+      attemptsCount: attempts,
+      difficulty: difficultyLevel
+    }
     
     // Record performance for difficulty adjustment
     recordPerformance(
@@ -280,13 +302,14 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
     recordSession(subject, Math.max(1, totalDuration), questions.length, coinsEarned, percentage)
     
     setTimeout(() => {
-      onComplete(coinsEarned)
+      onComplete(coinsEarned, performanceData)
       toast.success(`Activity completed! You earned ${coinsEarned} coins! 🪙`)
     }, 2000)
   }
 
   const handleShowHint = () => {
     setShowHint(true)
+    setHintsUsed(prev => prev + 1)
     triggerAnimation('hint_shown', 'helpful')
   }
 

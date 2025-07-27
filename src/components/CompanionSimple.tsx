@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useAnimationInterval, useAnimationTimeout } from '@/hooks/useAnimationRef'
 import type { AgeGroup } from '@/App'
 
 interface CompanionProps {
@@ -13,13 +14,14 @@ interface CompanionProps {
 function BabyDragon({ message }: { message: string }) {
   const [isBlinking, setIsBlinking] = useState(false)
 
-  useEffect(() => {
-    const interval = setInterval(() => {
+  // Use proper animation interval management
+  useAnimationInterval(
+    useCallback(() => {
       setIsBlinking(true)
       setTimeout(() => setIsBlinking(false), 200)
-    }, 3000)
-    return () => clearInterval(interval)
-  }, [])
+    }, []),
+    3000
+  )
 
   return (
     <div className="flex items-center gap-4">
@@ -76,13 +78,13 @@ function BabyDragon({ message }: { message: string }) {
 function RobotExplorer({ message }: { message: string }) {
   const [isScanning, setIsScanning] = useState(false)
 
-  useEffect(() => {
-    const interval = setInterval(() => {
+  useAnimationInterval(
+    useCallback(() => {
       setIsScanning(true)
       setTimeout(() => setIsScanning(false), 1000)
-    }, 4000)
-    return () => clearInterval(interval)
-  }, [])
+    }, []),
+    4000
+  )
 
   return (
     <div className="flex items-center gap-4">
@@ -142,13 +144,13 @@ function RobotExplorer({ message }: { message: string }) {
 function WiseGuide({ message }: { message: string }) {
   const [orbGlow, setOrbGlow] = useState(false)
 
-  useEffect(() => {
-    const interval = setInterval(() => {
+  useAnimationInterval(
+    useCallback(() => {
       setOrbGlow(true)
       setTimeout(() => setOrbGlow(false), 800)
-    }, 3000)
-    return () => clearInterval(interval)
-  }, [])
+    }, []),
+    3000
+  )
 
   return (
     <div className="flex items-center gap-4">

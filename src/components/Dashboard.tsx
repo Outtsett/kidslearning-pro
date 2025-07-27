@@ -7,8 +7,9 @@ import { Calculator, Flask, Book, Palette, Coins, Settings, Star, ArrowLeft, Tre
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { CustomizationStore } from '@/components/CustomizationStore'
 import { ProgressInsights } from '@/components/ProgressInsights'
-import { SimpleCharacterScene } from '@/components/3D/SimpleCharacterScene'
+import { CompanionOptimized } from '@/components/CompanionOptimized'
 import type { UserProfile, Subject } from '@/App'
+import type { useProgressiveDifficulty } from '@/hooks/useProgressiveDifficulty'
 
 interface DashboardProps {
   profile: UserProfile
@@ -16,6 +17,7 @@ interface DashboardProps {
   onActivityStart: (subject: Subject, activityId: string) => void
   onShowParentDashboard: () => void
   onBackToAgeSelection: () => void
+  difficultySystem: ReturnType<typeof useProgressiveDifficulty>
 }
 
 const SUBJECTS = [
@@ -257,20 +259,21 @@ function getCompanionDialogue(
   return emotionDialogues[Math.floor(Math.random() * emotionDialogues.length)]
 }
 
-export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowParentDashboard, onBackToAgeSelection }: DashboardProps) {
+export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowParentDashboard, onBackToAgeSelection, difficultySystem }: DashboardProps) {
   const [showCustomization, setShowCustomization] = useState(false)
   const [showInsights, setShowInsights] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
   const [companionEmotion, setCompanionEmotion] = useState<'happy' | 'excited' | 'proud' | 'encouraging' | 'thinking'>('happy')
   const [companionActivity, setCompanionActivity] = useState<'idle' | 'celebrating' | 'explaining' | 'waiting'>('idle')
+  const [showCompanionSpeech, setShowCompanionSpeech] = useState(false)
+  const [companionSpeechText, setCompanionSpeechText] = useState("")
   const containerRef = useRef<HTMLDivElement>(null)
-  const companionRef = useRef<HTMLDivElement>(null)
 
   // AI-powered companion emotion updates
   useEffect(() => {
     const updateCompanionEmotion = async () => {
       // Safety check for spark global
-      if (!window.spark) {
+      if (typeof window !== 'undefined' && !window.spark) {
         console.warn('Spark not available, using fallback emotions')
         const totalProgress = profile?.progress ? Object.values(profile.progress).reduce((sum, val) => sum + val, 0) / 4 : 0
         if (totalProgress > 80) setCompanionEmotion('proud')
@@ -282,32 +285,43 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
       const totalProgress = profile?.progress ? Object.values(profile.progress).reduce((sum, val) => sum + val, 0) / 4 : 0
       
       try {
-        const prompt = window.spark.llmPrompt`
-          Given the user's progress (${totalProgress}%), coins (${profile.coins}), selected subject (${selectedSubject}), and age group (${profile.ageGroup}),
-          suggest an appropriate emotion for the companion character. The emotion should be one of: happy, excited, proud, encouraging, or thinking.
-        `
-        // Call the LLM to get the emotion
-        if (!prompt) {
-          console.warn('No prompt generated, using fallback emotions')
-          const fallbackEmotion = totalProgress > 80 ? 'proud' : totalProgress > 50 ? 'excited' : 'encouraging'
-          setCompanionEmotion(fallbackEmotion)
-          return
-        }
-        // Use the LLM to determine the emotion
-        // Note: Ensure window.spark.llm is available in your environment
-        if (!window.spark.llm) {
-          console.warn('LLM not available, using fallback emotions')
-          const fallbackEmotion = totalProgress > 80 ? 'proud' : totalProgress > 50 ? 'excited' : 'encouraging'
-          setCompanionEmotion(fallbackEmotion)
-          return
-        }
-     
-        const emotion = await window.spark.llm(prompt, 'gpt-4o-mini')
-        const cleanEmotion = emotion.trim().toLowerCase() as typeof companionEmotion
-        if (['happy', 'excited', 'proud', 'encouraging', 'thinking'].includes(cleanEmotion)) {
-          setCompanionEmotion(cleanEmotion)
+        if (typeof window !== 'undefined' && window.spark?.llmPrompt && window.spark?.llm) {
+          const prompt = window.spark.llmPrompt`
+            Given the user's progress (${totalProgress}%), coins (${profile.coins}), selected subject (${selectedSubject}), and age group (${profile.ageGroup}),
+            suggest an appropriate emotion for the companion character. Return only one of: happy, excited, proud, encouraging, or thinking.
+          `
+          
+          const response = await window.spark.llm(prompt, 'gpt-4o-mini')
+          const cleanEmotion = response.trim().toLowerCase() as typeof companionEmotion
+          if (['happy', 'excited', 'proud', 'encouraging', 'thinking'].includes(cleanEmotion)) {
+            setCompanionEmotion(cleanEmotion)
+            
+            // Update speech text with the emotion change
+            const speechPrompt = window.spark.llmPrompt`Generate a short companion message for age group ${profile.ageGroup} expressing ${cleanEmotion} emotion. Keep it under 20 words and include the name ${profile.name}.`
+            const speechResponse = await window.spark.llm(speechPrompt, 'gpt-4o-mini')
+            setCompanionSpeechText(speechResponse.trim())
+            setShowCompanionSpeech(true)
+            
+            // Hide speech after 4 seconds
+            setTimeout(() => setShowCompanionSpeech(false), 4000)
+          }
+        } else {
+          // Fallback based on progress
+          if (totalProgress > 80) {
+            setCompanionEmotion('proud')
+            setCompanionSpeechText(`Amazing work, ${profile.name}! You're doing fantastic! 🌟`)
+          } else if (totalProgress > 50) {
+            setCompanionEmotion('excited')
+            setCompanionSpeechText(`Great progress, ${profile.name}! Let's keep going! 🚀`)
+          } else {
+            setCompanionEmotion('encouraging')
+            setCompanionSpeechText(`You can do it, ${profile.name}! Every step counts! 💪`)
+          }
+          setShowCompanionSpeech(true)
+          setTimeout(() => setShowCompanionSpeech(false), 3000)
         }
       } catch (error) {
+        console.warn('Error updating companion emotion:', error)
         // Fallback based on progress
         if (totalProgress > 80) setCompanionEmotion('proud')
         else if (totalProgress > 50) setCompanionEmotion('excited')
@@ -316,7 +330,7 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
     }
 
     updateCompanionEmotion()
-  }, [profile.progress, profile.coins, selectedSubject, profile.ageGroup])
+  }, [profile.progress, profile.coins, selectedSubject, profile.ageGroup, profile.name])
 
   // Safety check - return early if profile is not available
   if (!profile) {
@@ -440,17 +454,16 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
         <div className="flex-1 px-3 pb-3 min-h-0">
           {!selectedSubject ? (
             <div className="h-full flex flex-col gap-3">
-              {/* 3D Companion */}
-              <Card ref={companionRef} className="bg-gradient-to-r from-primary/20 to-secondary/20 border-none flex-shrink-0">
-                <CardContent className="p-2">
-                  <SimpleCharacterScene
+              {/* Optimized Companion */}
+              <Card className="bg-gradient-to-r from-primary/20 to-secondary/20 border-none flex-shrink-0">
+                <CardContent className="p-4 flex justify-center">
+                  <CompanionOptimized
                     ageGroup={profile.ageGroup}
+                    name="Companion"
                     emotion={companionEmotion}
                     activity={companionActivity}
-                    dialogue={getCompanionDialogue(profile.ageGroup, companionEmotion, companionActivity, profile.name)}
-                    className="w-full h-48"
-                    enableControls={false}
-                    autoRotate={true}
+                    showSpeech={showCompanionSpeech}
+                    speechText={companionSpeechText}
                   />
                 </CardContent>
               </Card>
@@ -466,7 +479,12 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
                       onClick={() => {
                         setCompanionActivity('explaining')
                         setCompanionEmotion('excited')
-                        setTimeout(() => setSelectedSubject(subject.id), 100)
+                        setCompanionSpeechText(`Let's explore ${subject.name} together, ${profile.name}! 🎯`)
+                        setShowCompanionSpeech(true)
+                        setTimeout(() => {
+                          setSelectedSubject(subject.id)
+                          setShowCompanionSpeech(false)
+                        }, 2000)
                       }}
                     >
                       <CardContent className="p-3 flex flex-col items-center justify-center h-full text-center">
@@ -504,6 +522,7 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
                     setCompanionActivity('waiting')
                     setCompanionEmotion('happy')
                     setSelectedSubject(null)
+                    setShowCompanionSpeech(false)
                   }}
                 >
                   ← Back
@@ -522,7 +541,12 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
                     onClick={() => {
                       setCompanionActivity('celebrating')
                       setCompanionEmotion('excited')
-                      onActivityStart(selectedSubject, activity.id)
+                      setCompanionSpeechText(`Great choice, ${profile.name}! Let's start learning! 🌟`)
+                      setShowCompanionSpeech(true)
+                      setTimeout(() => {
+                        onActivityStart(selectedSubject, activity.id)
+                        setShowCompanionSpeech(false)
+                      }, 1500)
                     }}
                   >
                     <CardContent className="p-4 flex flex-col justify-between h-full">
