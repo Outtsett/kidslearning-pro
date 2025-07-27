@@ -47,8 +47,7 @@ const generateAnimationPattern = async (
   trigger: string,
   progress: number
 ): Promise<AnimationPattern> => {
-  const prompt = spark.llmPrompt`
-Create an animation pattern for a kids learning app with these details:
+  const prompt = spark.llmPrompt`Create an animation pattern for a kids learning app with these details:
 - Age Group: ${ageGroup}
 - Subject: ${subject}
 - Emotion: ${emotion}

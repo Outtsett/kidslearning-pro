@@ -20,8 +20,7 @@ function useAIMovement(emotion: string, activity: string) {
 
   useEffect(() => {
     const generateMovement = async () => {
-      const prompt = spark.llmPrompt`
-Generate natural movement parameters for a companion character based on:
+      const prompt = spark.llmPrompt`Generate natural movement parameters for a companion character based on:
 - Emotion: ${emotion}
 - Activity: ${activity}
 
@@ -112,8 +111,7 @@ function BabyDragon({ message, emotion = 'happy', activity = 'idle' }: {
   // AI-generated personality responses
   useEffect(() => {
     const generatePersonality = async () => {
-      const prompt = spark.llmPrompt`
-Generate a short, warm personality trait for a baby dragon companion based on:
+      const prompt = spark.llmPrompt`Generate a short, warm personality trait for a baby dragon companion based on:
 - Current emotion: ${emotion}
 - Current activity: ${activity}
 - Age group: 3-5 years
@@ -353,8 +351,7 @@ function RobotExplorer({ message, emotion = 'excited', activity = 'idle' }: {
   // AI-generated robotic personality
   useEffect(() => {
     const generateDialogue = async () => {
-      const prompt = spark.llmPrompt`
-Generate a short robotic catchphrase or system status for an explorer robot based on:
+      const prompt = spark.llmPrompt`Generate a short robotic catchphrase or system status for an explorer robot based on:
 - Current emotion: ${emotion}
 - Current activity: ${activity}
 - Age group: 6-9 years
@@ -600,8 +597,7 @@ function WiseGuide({ message, emotion = 'encouraging', activity = 'idle' }: {
   // AI-generated wisdom phrases
   useEffect(() => {
     const generateWisdom = async () => {
-      const prompt = spark.llmPrompt`
-Generate a short inspirational phrase for a wise guide character based on:
+      const prompt = spark.llmPrompt`Generate a short inspirational phrase for a wise guide character based on:
 - Current emotion: ${emotion}
 - Current activity: ${activity}
 - Age group: 10-12 years
