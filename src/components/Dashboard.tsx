@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Calculator, Flask, Book, Palette, Coins, Settings, Star, ArrowLeft } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { CustomizationStore } from '@/components/CustomizationStore'
-import { CompanionMessage } from '@/components/Companions'
+import { CharacterScene } from '@/components/3D/CharacterScene'
 import type { UserProfile, Subject } from '@/App'
 
 interface DashboardProps {
@@ -220,6 +220,42 @@ const ACTIVITIES_BY_AGE = {
   }
 }
 
+// Helper function to generate companion dialogue
+function getCompanionDialogue(
+  ageGroup: UserProfile['ageGroup'], 
+  emotion: string, 
+  activity: string, 
+  name: string
+): string {
+  const dialogues = {
+    '3-5': {
+      happy: [`Hi ${name}! I'm so happy to see you! 🌟`, `You're amazing, ${name}! Let's play together! 🎈`, `What fun should we have today, ${name}? 🌸`],
+      excited: [`Wow ${name}! This is going to be so fun! ✨`, `I can't wait to learn with you, ${name}! 🦄`, `Adventure time, ${name}! Let's go! 🌈`],
+      proud: [`You did such a great job, ${name}! I'm so proud! 💖`, `Amazing work, ${name}! You're a superstar! ⭐`, `You're getting so smart, ${name}! 🎉`],
+      encouraging: [`You can do it, ${name}! I believe in you! 💪`, `Don't worry ${name}, we'll figure it out together! 🤗`, `Every step counts, ${name}! Keep going! 🌱`],
+      thinking: [`Hmm, let me think about this, ${name}... 🤔`, `What's the best way to help you, ${name}? 💭`, `I'm thinking of something fun for us, ${name}! 💫`]
+    },
+    '6-9': {
+      happy: [`Hey ${name}! Ready for some awesome adventures? 🚀`, `Great to see you, ${name}! Let's explore together! 🔍`, `Hi ${name}! My circuits are buzzing with excitement! ⚡`],
+      excited: [`This is going to be epic, ${name}! 🎮`, `Sensors detecting maximum fun levels, ${name}! 🤖`, `Adventure mode activated, ${name}! Let's go! 🎯`],
+      proud: [`Outstanding work, ${name}! My pride sensors are off the charts! 📊`, `You're becoming quite the explorer, ${name}! 🏆`, `Achievement unlocked, ${name}! You rock! 🎖️`],
+      encouraging: [`Keep going ${name}! Every great explorer faces challenges! 💪`, `My scanners show you're on the right path, ${name}! 🛤️`, `Don't give up ${name}! Great discoveries await! 🔭`],
+      thinking: [`Computing the best learning path for you, ${name}... 💻`, `Analyzing fun factor... Results: MAXIMUM, ${name}! 📈`, `Processing new adventure ideas, ${name}! 🧮`]
+    },
+    '10-12': {
+      happy: [`Greetings, ${name}. The realms of knowledge welcome you. 📚`, `Well met, ${name}. Your quest for wisdom continues. ✨`, `Welcome back, ${name}. Ready to unlock new mysteries? 🗝️`],
+      excited: [`The ancient texts speak of great potential, ${name}! 📜`, `Your magical abilities grow stronger, ${name}! 🔮`, `A new chapter of your legend begins, ${name}! ⚡`],
+      proud: [`Your mastery impresses even the wisest scholars, ${name}. 🎓`, `The council of learning recognizes your achievements, ${name}! 🏛️`, `Your knowledge shines brighter than starlight, ${name}! ⭐`],
+      encouraging: [`Every master was once a student, ${name}. Press onward! 🌟`, `The path of wisdom requires patience, ${name}. You're doing well. 🛤️`, `Great minds face great challenges, ${name}. You've got this! 💫`],
+      thinking: [`Consulting the ancient wisdom for you, ${name}... 📖`, `The stars align to guide your learning journey, ${name}... 🌌`, `Seeking the perfect quest for your skill level, ${name}... 🗺️`]
+    }
+  }
+
+  const ageDialogues = dialogues[ageGroup]
+  const emotionDialogues = ageDialogues[emotion as keyof typeof ageDialogues] || ageDialogues.happy
+  return emotionDialogues[Math.floor(Math.random() * emotionDialogues.length)]
+}
+
 export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowParentDashboard, onBackToAgeSelection }: DashboardProps) {
   const [showCustomization, setShowCustomization] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
@@ -356,12 +392,15 @@ Return one word: happy, excited, proud, encouraging, or thinking`
             <div className="h-full flex flex-col gap-3">
               {/* 3D Companion */}
               <Card ref={companionRef} className="bg-gradient-to-r from-primary/20 to-secondary/20 border-none flex-shrink-0">
-                <CardContent className="p-4 flex justify-center">
-                  <CompanionMessage 
-                    ageGroup={profile.ageGroup} 
-                    name={profile.name}
+                <CardContent className="p-2">
+                  <CharacterScene
+                    ageGroup={profile.ageGroup}
                     emotion={companionEmotion}
                     activity={companionActivity}
+                    dialogue={getCompanionDialogue(profile.ageGroup, companionEmotion, companionActivity, profile.name)}
+                    className="w-full h-48"
+                    enableControls={false}
+                    autoRotate={true}
                   />
                 </CardContent>
               </Card>
