@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { motion } from 'framer-motion'
-import { Star, Heart, Sparkles } from '@phosphor-icons/react'
+import { Heart } from '@phosphor-icons/react'
 import type { AgeGroup } from '@/App'
 
 interface AgeGroupSelectionProps {
@@ -58,17 +58,14 @@ const AGE_GROUPS = [
 ]
 
 export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps) {
-  const [selectedGroup, setSelectedGroup] = useState<AgeGroup | null>(null)
   const [showDetails, setShowDetails] = useState<AgeGroup | null>(null)
 
-  const handleContinue = () => {
-    if (selectedGroup) {
-      onAgeGroupSelected(selectedGroup)
-    }
+  const handleAgeGroupClick = (ageGroup: AgeGroup) => {
+    onAgeGroupSelected(ageGroup)
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${selectedGroup ? AGE_GROUPS.find(g => g.id === selectedGroup)?.colors || 'from-primary/20 via-lavender/20 to-secondary/20' : 'from-primary/20 via-lavender/20 to-secondary/20'} transition-all duration-1000 overflow-y-auto`}>
+    <div className={`min-h-screen bg-gradient-to-br from-primary/20 via-lavender/20 to-secondary/20 transition-all duration-1000 overflow-y-auto`}>
       <div className="flex flex-col p-4 min-h-screen">
         {/* Welcome Header - Fixed Height */}
         <motion.div 
@@ -114,12 +111,8 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
                 className="flex"
               >
                 <Card 
-                  className={`cursor-pointer transition-all duration-300 hover:shadow-xl ${
-                    selectedGroup === group.id 
-                      ? 'ring-2 ring-primary shadow-xl' 
-                      : 'hover:shadow-lg'
-                  } ${group.cardColors} flex flex-col w-full h-full`}
-                  onClick={() => setSelectedGroup(group.id)}
+                  className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-lg ${group.cardColors} flex flex-col w-full h-full`}
+                  onClick={() => handleAgeGroupClick(group.id)}
                 >
                   <CardHeader className="text-center pb-2 flex-shrink-0">
                     <div className="text-3xl mb-2">{group.emoji}</div>
@@ -137,7 +130,7 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
                       </p>
                       
                       <Button
-                        variant={selectedGroup === group.id ? "default" : "outline"}
+                        variant="outline"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation()
@@ -169,54 +162,12 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
                         </motion.div>
                       )}
                     </div>
-
-                    {selectedGroup === group.id && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="flex justify-center mt-2"
-                      >
-                        <div className="flex items-center gap-1">
-                          <Star className="text-yellow-500 w-4 h-4" weight="fill" />
-                          <span className="font-heading text-xs font-semibold text-foreground">Selected!</span>
-                        </div>
-                      </motion.div>
-                    )}
                   </CardContent>
                 </Card>
               </motion.div>
             ))}
           </div>
         </div>
-
-        {/* Continue Button - Fixed Bottom */}
-        {selectedGroup && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mt-6 pb-4"
-          >
-            <Card className="inline-block bg-white/90 border-none shadow-xl">
-              <CardContent className="p-4">
-                <div className="text-center space-y-2">
-                  <div className="text-2xl">
-                    {AGE_GROUPS.find(g => g.id === selectedGroup)?.emoji}
-                  </div>
-                  <p className="font-body text-sm text-muted-foreground">
-                    Perfect choice! Let's start learning!
-                  </p>
-                  <Button
-                    onClick={handleContinue}
-                    size="lg"
-                    className="font-heading text-sm px-6 py-2"
-                  >
-                    Start Learning <Sparkles className="ml-2 w-4 h-4" weight="fill" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
       </div>
     </div>
   )
