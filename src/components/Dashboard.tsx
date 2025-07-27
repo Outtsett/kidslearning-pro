@@ -281,14 +281,25 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
       
       try {
         const prompt = window.spark.llmPrompt`
-Based on a child's learning progress, suggest the companion's emotional state:
-- Age Group: ${profile.ageGroup}
-- Total Progress: ${totalProgress}%
-- Recent Activity: ${selectedSubject || 'browsing dashboard'}
-- Coins Earned: ${profile.coins}
-
-Return one word: happy, excited, proud, encouraging, or thinking`
-
+          Given the user's progress (${totalProgress}%), coins (${profile.coins}), selected subject (${selectedSubject}), and age group (${profile.ageGroup}),
+          suggest an appropriate emotion for the companion character. The emotion should be one of: happy, excited, proud, encouraging, or thinking.
+        `
+        // Call the LLM to get the emotion
+        if (!prompt) {
+          console.warn('No prompt generated, using fallback emotions')
+          const fallbackEmotion = totalProgress > 80 ? 'proud' : totalProgress > 50 ? 'excited' : 'encouraging'
+          setCompanionEmotion(fallbackEmotion)
+          return
+        }
+        // Use the LLM to determine the emotion
+        // Note: Ensure window.spark.llm is available in your environment
+        if (!window.spark.llm) {
+          console.warn('LLM not available, using fallback emotions')
+          const fallbackEmotion = totalProgress > 80 ? 'proud' : totalProgress > 50 ? 'excited' : 'encouraging'
+          setCompanionEmotion(fallbackEmotion)
+          return
+        }
+     
         const emotion = await window.spark.llm(prompt, 'gpt-4o-mini')
         const cleanEmotion = emotion.trim().toLowerCase() as typeof companionEmotion
         if (['happy', 'excited', 'proud', 'encouraging', 'thinking'].includes(cleanEmotion)) {
