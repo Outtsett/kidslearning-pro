@@ -23,7 +23,8 @@ function useAIMovement(emotion: string, activity: string) {
 
   useEffect(() => {
     const generateMovement = async () => {
-      const prompt = spark.llmPrompt`Generate natural movement parameters for a companion character based on:
+      try {
+        const prompt = window.spark.llmPrompt`Generate natural movement parameters for a companion character based on:
 - Emotion: ${emotion}
 - Activity: ${activity}
 
@@ -36,8 +37,7 @@ Return JSON with structure:
 
 Consider natural, PBS kids-style animation that feels alive but not distracting.`
 
-      try {
-        const response = await spark.llm(prompt, 'gpt-4o-mini', true)
+        const response = await window.spark.llm(prompt, 'gpt-4o-mini', true)
         const newMovement = JSON.parse(response)
         setMovement(newMovement)
       } catch (error) {
@@ -113,7 +113,8 @@ function BabyDragon({ message, emotion = 'happy', activity = 'idle' }: {
   // AI-generated personality responses
   useEffect(() => {
     const generatePersonality = async () => {
-      const prompt = spark.llmPrompt`Generate a short, warm personality trait for a baby dragon companion based on:
+      try {
+        const prompt = window.spark.llmPrompt`Generate a short, warm personality trait for a baby dragon companion based on:
 - Current emotion: ${emotion}
 - Current activity: ${activity}
 - Age group: 3-5 years
@@ -122,8 +123,7 @@ Return a single descriptive phrase (2-4 words) that captures the dragon's curren
 Examples: "giggling softly", "eyes sparkling", "tail swishing", "wings fluttering"
 Keep it gentle and nurturing for young children.`
 
-      try {
-        const response = await spark.llm(prompt, 'gpt-4o-mini')
+        const response = await window.spark.llm(prompt, 'gpt-4o-mini')
         setAIPersonality(response.trim())
       } catch (error) {
         setAIPersonality('eyes twinkling')
@@ -342,7 +342,8 @@ function RobotExplorer({ message, emotion = 'excited', activity = 'idle' }: {
   // AI-generated robotic personality
   useEffect(() => {
     const generateDialogue = async () => {
-      const prompt = spark.llmPrompt`Generate a short robotic catchphrase or system status for an explorer robot based on:
+      try {
+        const prompt = window.spark.llmPrompt`Generate a short robotic catchphrase or system status for an explorer robot based on:
 - Current emotion: ${emotion}
 - Current activity: ${activity}
 - Age group: 6-9 years
@@ -351,8 +352,7 @@ Return 2-4 words that sound like fun robot speech.
 Examples: "SYSTEMS GO!", "SCANNING...", "AWESOME DETECTED!", "LEARNING MODE ON"
 Keep it playful and tech-themed for school-age children.`
 
-      try {
-        const response = await spark.llm(prompt, 'gpt-4o-mini')
+        const response = await window.spark.llm(prompt, 'gpt-4o-mini')
         setAIDialogue(response.trim().replace(/['"]/g, ''))
       } catch (error) {
         setAIDialogue('READY TO EXPLORE!')
@@ -577,7 +577,8 @@ function WiseGuide({ message, emotion = 'encouraging', activity = 'idle' }: {
   // AI-generated wisdom phrases
   useEffect(() => {
     const generateWisdom = async () => {
-      const prompt = spark.llmPrompt`Generate a short inspirational phrase for a wise guide character based on:
+      try {
+        const prompt = window.spark.llmPrompt`Generate a short inspirational phrase for a wise guide character based on:
 - Current emotion: ${emotion}
 - Current activity: ${activity}
 - Age group: 10-12 years
@@ -586,8 +587,7 @@ Return 2-5 words that sound wise and encouraging for preteens.
 Examples: "Knowledge grows strong!", "Curiosity leads truth!", "Mind expanding!", "Wisdom unlocked!"
 Keep it mystical but relatable for older children.`
 
-      try {
-        const response = await spark.llm(prompt, 'gpt-4o-mini')
+        const response = await window.spark.llm(prompt, 'gpt-4o-mini')
         setAIWisdom(response.trim().replace(/['"]/g, ''))
       } catch (error) {
         setAIWisdom('Knowledge is power!')

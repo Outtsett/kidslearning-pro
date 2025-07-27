@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CompanionMessage } from '@/components/CompanionSimple'
+import { CompanionMessage } from '@/components/Companions'
 import type { AgeGroup } from '@/App'
 
 export function CompanionTest() {

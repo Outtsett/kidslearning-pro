@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Calculator, Flask, Book, Palette, Coins, Settings, Star, ArrowLeft } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { CustomizationStore } from '@/components/CustomizationStore'
-import { CompanionMessage } from '@/components/CompanionSimple'
+import { CompanionMessage } from '@/components/Companions'
 import type { UserProfile, Subject } from '@/App'
 
 interface DashboardProps {
@@ -231,9 +231,20 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
   // AI-powered companion emotion updates
   useEffect(() => {
     const updateCompanionEmotion = async () => {
-      const totalProgress = Object.values(profile.progress).reduce((sum, val) => sum + val, 0) / 4
+      // Safety check for spark global
+      if (!window.spark) {
+        console.warn('Spark not available, using fallback emotions')
+        const totalProgress = profile?.progress ? Object.values(profile.progress).reduce((sum, val) => sum + val, 0) / 4 : 0
+        if (totalProgress > 80) setCompanionEmotion('proud')
+        else if (totalProgress > 50) setCompanionEmotion('excited')
+        else setCompanionEmotion('encouraging')
+        return
+      }
+
+      const totalProgress = profile?.progress ? Object.values(profile.progress).reduce((sum, val) => sum + val, 0) / 4 : 0
       
-      const prompt = spark.llmPrompt`
+      try {
+        const prompt = window.spark.llmPrompt`
 Based on a child's learning progress, suggest the companion's emotional state:
 - Age Group: ${profile.ageGroup}
 - Total Progress: ${totalProgress}%
@@ -242,8 +253,7 @@ Based on a child's learning progress, suggest the companion's emotional state:
 
 Return one word: happy, excited, proud, encouraging, or thinking`
 
-      try {
-        const emotion = await spark.llm(prompt, 'gpt-4o-mini')
+        const emotion = await window.spark.llm(prompt, 'gpt-4o-mini')
         const cleanEmotion = emotion.trim().toLowerCase() as typeof companionEmotion
         if (['happy', 'excited', 'proud', 'encouraging', 'thinking'].includes(cleanEmotion)) {
           setCompanionEmotion(cleanEmotion)
