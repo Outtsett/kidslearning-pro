@@ -4,12 +4,29 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { SimpleCharacterScene, SimpleCompanionWidget } from './3D/SimpleCharacterScene'
+import { ErrorBoundary } from 'react-error-boundary'
 import type { AgeGroup } from '@/App'
 
 interface DialogueOption {
   text: string
   emotion: 'happy' | 'excited' | 'proud' | 'encouraging' | 'thinking' | 'idle'
   activity: 'idle' | 'celebrating' | 'explaining' | 'waiting' | 'floating'
+}
+
+function Simple3DErrorFallback() {
+  return (
+    <div className="w-full h-96 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-4xl mb-2">🤖</div>
+        <div className="text-lg font-heading text-foreground">
+          3D Companion Unavailable
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Your browser may not support 3D graphics
+        </div>
+      </div>
+    </div>
+  )
 }
 
 const dialogueOptions: Record<AgeGroup, DialogueOption[]> = {
@@ -88,6 +105,7 @@ export function CompanionTest({}: CompanionTestProps) {
   const [currentDialogue, setCurrentDialogue] = useState(0)
   const [showDialogue, setShowDialogue] = useState(true)
   const [isAutoPlay, setIsAutoPlay] = useState(false)
+  const [hasError, setHasError] = useState(false)
   
   const intervalRef = useRef<NodeJS.Timeout>()
 
@@ -95,20 +113,25 @@ export function CompanionTest({}: CompanionTestProps) {
   const currentOption = currentOptions[currentDialogue]
 
   useEffect(() => {
-    if (isAutoPlay) {
-      intervalRef.current = setInterval(() => {
-        setCurrentDialogue((prev) => (prev + 1) % currentOptions.length)
-      }, 4000)
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+    try {
+      if (isAutoPlay) {
+        intervalRef.current = setInterval(() => {
+          setCurrentDialogue((prev) => (prev + 1) % currentOptions.length)
+        }, 4000)
+      } else {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+        }
       }
-    }
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+        }
       }
+    } catch (error) {
+      console.error('CompanionTest useEffect error:', error)
+      setHasError(true)
     }
   }, [isAutoPlay, currentOptions.length])
 
@@ -116,6 +139,25 @@ export function CompanionTest({}: CompanionTestProps) {
     '3-5': 'Baby Dragon',
     '6-9': 'Robot Explorer', 
     '10-12': 'Tech Guide'
+  }
+
+  if (hasError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-100 via-orange-50 to-yellow-100 p-4 flex items-center justify-center">
+        <div className="bg-white rounded-xl p-8 shadow-lg text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-heading text-foreground mb-4">
+            Companion Test Error
+          </h1>
+          <p className="text-muted-foreground mb-4">
+            There was an error loading the 3D companion test. This might be due to WebGL compatibility issues.
+          </p>
+          <Button onClick={() => setHasError(false)} className="font-heading">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -162,15 +204,17 @@ export function CompanionTest({}: CompanionTestProps) {
             <h3 className="text-xl font-heading mb-4 text-center">
               {characterNames[selectedAge]}
             </h3>
-            <SimpleCharacterScene
-              ageGroup={selectedAge}
-              emotion={currentOption.emotion}
-              activity={currentOption.activity}
-              dialogue={showDialogue ? currentOption.text : undefined}
-              className="w-full h-96"
-              enableControls={true}
-              autoRotate={!isAutoPlay}
-            />
+            <ErrorBoundary fallback={<Simple3DErrorFallback />}>
+              <SimpleCharacterScene
+                ageGroup={selectedAge}
+                emotion={currentOption.emotion}
+                activity={currentOption.activity}
+                dialogue={showDialogue ? currentOption.text : undefined}
+                className="w-full h-96"
+                enableControls={true}
+                autoRotate={!isAutoPlay}
+              />
+            </ErrorBoundary>
           </Card>
 
           {/* Controls */}
@@ -239,30 +283,36 @@ export function CompanionTest({}: CompanionTestProps) {
           <div className="flex items-center justify-center gap-8">
             <div className="text-center">
               <p className="text-sm font-medium mb-2">Small Widget</p>
-              <SimpleCompanionWidget 
-                ageGroup={selectedAge}
-                emotion={currentOption.emotion}
-                activity={currentOption.activity}
-                size="small"
-              />
+              <ErrorBoundary fallback={<div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">🤖</div>}>
+                <SimpleCompanionWidget 
+                  ageGroup={selectedAge}
+                  emotion={currentOption.emotion}
+                  activity={currentOption.activity}
+                  size="small"
+                />
+              </ErrorBoundary>
             </div>
             <div className="text-center">
               <p className="text-sm font-medium mb-2">Medium Widget</p>
-              <SimpleCompanionWidget 
-                ageGroup={selectedAge}
-                emotion={currentOption.emotion}
-                activity={currentOption.activity}
-                size="medium"
-              />
+              <ErrorBoundary fallback={<div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center">🤖</div>}>
+                <SimpleCompanionWidget 
+                  ageGroup={selectedAge}
+                  emotion={currentOption.emotion}
+                  activity={currentOption.activity}
+                  size="medium"
+                />
+              </ErrorBoundary>
             </div>
             <div className="text-center">
               <p className="text-sm font-medium mb-2">Large Widget</p>
-              <SimpleCompanionWidget 
-                ageGroup={selectedAge}
-                emotion={currentOption.emotion}
-                activity={currentOption.activity}
-                size="large"
-              />
+              <ErrorBoundary fallback={<div className="w-48 h-48 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🤖</div>}>
+                <SimpleCompanionWidget 
+                  ageGroup={selectedAge}
+                  emotion={currentOption.emotion}
+                  activity={currentOption.activity}
+                  size="large"
+                />
+              </ErrorBoundary>
             </div>
           </div>
         </Card>

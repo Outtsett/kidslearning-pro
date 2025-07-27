@@ -18,27 +18,31 @@ function SimpleBabyDragon({ emotion = 'happy', activity = 'idle', position = [0,
   const eyesRef = useRef<THREE.Group>(null)
 
   useFrame((state) => {
-    if (!groupRef.current) return
+    if (!groupRef.current || !state?.clock) return
     
-    const time = state.clock.elapsedTime
-    
-    // Gentle floating
-    groupRef.current.position.y = position[1] + Math.sin(time * 2) * 0.1
-    groupRef.current.rotation.z = Math.sin(time * 0.5) * 0.05
-    
-    // Wing flapping
-    if (wingsRef.current) {
-      wingsRef.current.rotation.y = Math.sin(time * 4) * 0.2
-    }
-    
-    // Blinking
-    if (eyesRef.current) {
-      const blinkTime = time % 3
-      if (blinkTime > 2.8) {
-        eyesRef.current.scale.y = 0.1
-      } else {
-        eyesRef.current.scale.y = 1
+    try {
+      const time = state.clock.elapsedTime
+      
+      // Gentle floating
+      groupRef.current.position.y = position[1] + Math.sin(time * 2) * 0.1
+      groupRef.current.rotation.z = Math.sin(time * 0.5) * 0.05
+      
+      // Wing flapping
+      if (wingsRef.current) {
+        wingsRef.current.rotation.y = Math.sin(time * 4) * 0.2
       }
+      
+      // Blinking
+      if (eyesRef.current) {
+        const blinkTime = time % 3
+        if (blinkTime > 2.8) {
+          eyesRef.current.scale.y = 0.1
+        } else {
+          eyesRef.current.scale.y = 1
+        }
+      }
+    } catch (error) {
+      console.error('SimpleBabyDragon animation error:', error)
     }
   })
 
@@ -113,14 +117,18 @@ function SimpleRobotExplorer({ emotion = 'happy', activity = 'idle', position = 
   const antennaRef = useRef<THREE.Group>(null)
 
   useFrame((state) => {
-    if (!groupRef.current) return
+    if (!groupRef.current || !state?.clock) return
     
-    const time = state.clock.elapsedTime
-    groupRef.current.position.y = position[1] + Math.sin(time * 1.5) * 0.05
-    groupRef.current.rotation.y = Math.sin(time * 0.3) * 0.1
-    
-    if (antennaRef.current) {
-      antennaRef.current.rotation.z = Math.sin(time * 2) * 0.2
+    try {
+      const time = state.clock.elapsedTime
+      groupRef.current.position.y = position[1] + Math.sin(time * 1.5) * 0.05
+      groupRef.current.rotation.y = Math.sin(time * 0.3) * 0.1
+      
+      if (antennaRef.current) {
+        antennaRef.current.rotation.z = Math.sin(time * 2) * 0.2
+      }
+    } catch (error) {
+      console.error('SimpleRobotExplorer animation error:', error)
     }
   })
 
@@ -191,13 +199,17 @@ function SimpleTechGuide({ emotion = 'happy', activity = 'idle', position = [0, 
   const orbRef = useRef<THREE.Group>(null)
 
   useFrame((state) => {
-    if (!groupRef.current) return
+    if (!groupRef.current || !state?.clock) return
     
-    const time = state.clock.elapsedTime
-    groupRef.current.position.y = position[1] + Math.sin(time * 1.2) * 0.08
-    
-    if (orbRef.current) {
-      orbRef.current.rotation.y = time * 0.5
+    try {
+      const time = state.clock.elapsedTime
+      groupRef.current.position.y = position[1] + Math.sin(time * 1.2) * 0.08
+      
+      if (orbRef.current) {
+        orbRef.current.rotation.y = time * 0.5
+      }
+    } catch (error) {
+      console.error('SimpleTechGuide animation error:', error)
     }
   })
 
@@ -270,19 +282,32 @@ export function SimpleCharacter3D({ ageGroup, emotion = 'happy', activity = 'idl
                            ageGroup === '6-9' ? SimpleRobotExplorer :
                            SimpleTechGuide
 
-  return (
-    <>
-      {/* Lighting */}
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[2, 5, 2]} intensity={1} />
-      <pointLight position={[-2, 2, 2]} intensity={0.5} color="#FFB6C1" />
-      
-      <CharacterComponent 
-        emotion={emotion} 
-        activity={activity} 
-        position={position} 
-        scale={scale} 
-      />
-    </>
-  )
+  try {
+    return (
+      <>
+        {/* Lighting */}
+        <ambientLight intensity={0.6} />
+        <directionalLight position={[2, 5, 2]} intensity={1} />
+        <pointLight position={[-2, 2, 2]} intensity={0.5} color="#FFB6C1" />
+        
+        <CharacterComponent 
+          emotion={emotion} 
+          activity={activity} 
+          position={position} 
+          scale={scale} 
+        />
+      </>
+    )
+  } catch (error) {
+    console.error('SimpleCharacter3D error:', error)
+    return (
+      <>
+        <ambientLight intensity={0.6} />
+        <mesh position={position} scale={scale}>
+          <sphereGeometry args={[1, 16, 16]} />
+          <meshStandardMaterial color="#4F46E5" />
+        </mesh>
+      </>
+    )
+  }
 }

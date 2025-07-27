@@ -15,6 +15,19 @@ function LoadingFallback() {
   )
 }
 
+function ErrorFallback() {
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-100 to-pink-100">
+      <div className="text-center">
+        <div className="text-4xl mb-2">🤖</div>
+        <div className="text-lg font-heading text-foreground">
+          Companion unavailable
+        </div>
+      </div>
+    </div>
+  )
+}
+
 interface SimpleCharacterSceneProps {
   ageGroup: AgeGroup
   emotion?: 'happy' | 'excited' | 'proud' | 'encouraging' | 'thinking' | 'idle'
@@ -68,6 +81,7 @@ export function SimpleCharacterScene({
             antialias: true, 
             alpha: true
           }}
+          onError={() => console.error('Canvas error')}
         >
           <Environment preset="studio" />
           
@@ -111,7 +125,7 @@ export function SimpleCharacterScene({
   )
 }
 
-// Simplified companion widget
+// Simplified companion widget with error boundary
 export function SimpleCompanionWidget({ 
   ageGroup, 
   emotion = 'happy', 
@@ -129,14 +143,25 @@ export function SimpleCompanionWidget({
     large: 'w-48 h-48'
   }
 
-  return (
-    <SimpleCharacterScene
-      ageGroup={ageGroup}
-      emotion={emotion}
-      activity={activity}
-      className={`${sizeClasses[size]} rounded-full`}
-      enableControls={false}
-      autoRotate={true}
-    />
-  )
+  try {
+    return (
+      <SimpleCharacterScene
+        ageGroup={ageGroup}
+        emotion={emotion}
+        activity={activity}
+        className={`${sizeClasses[size]} rounded-full`}
+        enableControls={false}
+        autoRotate={true}
+      />
+    )
+  } catch (error) {
+    console.error('SimpleCompanionWidget error:', error)
+    return (
+      <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center`}>
+        <span className="text-2xl">
+          {ageGroup === '3-5' ? '🐉' : ageGroup === '6-9' ? '🤖' : '🧙‍♂️'}
+        </span>
+      </div>
+    )
+  }
 }
