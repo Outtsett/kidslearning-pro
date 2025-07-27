@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { AgeGroupSelection } from '@/components/AgeGroupSelection'
-import { AvatarCreation } from '@/components/AvatarCreation'
 import { Dashboard } from '@/components/Dashboard'
 import { LearningActivity } from '@/components/LearningActivity'
 import { ParentDashboard } from '@/components/ParentDashboard'
@@ -39,10 +38,24 @@ function App() {
 
   const handleAgeGroupSelected = (ageGroup: AgeGroup) => {
     setSelectedAgeGroup(ageGroup)
-  }
-
-  const handleProfileCreated = (newProfile: UserProfile) => {
-    setProfile(newProfile)
+    // Create default profile when age group is selected
+    const defaultProfile: UserProfile = {
+      name: 'Young Learner',
+      age: ageGroup === '3-5' ? 4 : ageGroup === '6-9' ? 7 : 11,
+      ageGroup,
+      avatar: {
+        body: 'default',
+        hair: 'default',
+        clothes: 'default',
+        accessories: []
+      },
+      theme: 'default',
+      coins: 0,
+      unlockedItems: [],
+      progress: { math: 0, science: 0, reading: 0, art: 0 },
+      achievements: []
+    }
+    setProfile(defaultProfile)
   }
 
   const handleActivityStart = (subject: Subject, activityId: string) => {
@@ -81,11 +94,6 @@ function App() {
     return <AgeGroupSelection onAgeGroupSelected={handleAgeGroupSelected} />
   }
 
-  // If age group is selected but no profile exists, show avatar creation
-  if (!profile) {
-    return <AvatarCreation onProfileCreated={handleProfileCreated} ageGroup={selectedAgeGroup} onBackToAgeSelection={handleBackToAgeSelection} />
-  }
-
   if (showParentDashboard) {
     return (
       <ParentDashboard
@@ -109,7 +117,7 @@ function App() {
 
   return (
     <Dashboard
-      profile={profile}
+      profile={profile!}
       onProfileUpdate={setProfile}
       onActivityStart={handleActivityStart}
       onShowParentDashboard={handleShowParentDashboard}
