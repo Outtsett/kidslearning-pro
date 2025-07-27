@@ -3,13 +3,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Heart, Sparkles, ArrowRight } from '@phosphor-icons/react'
+import { Heart, Sparkles, ArrowRight, ArrowLeft } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import type { UserProfile, AgeGroup } from '@/App'
 
 interface AvatarCreationProps {
   onProfileCreated: (profile: UserProfile) => void
   ageGroup: AgeGroup
+  onBackToAgeSelection: () => void
 }
 
 const AVATAR_OPTIONS = {
@@ -26,7 +27,7 @@ const THEMES = [
   { id: 'candy', name: 'Candy Land', color: 'bg-pink-200', locked: true }
 ]
 
-export function AvatarCreation({ onProfileCreated, ageGroup }: AvatarCreationProps) {
+export function AvatarCreation({ onProfileCreated, ageGroup, onBackToAgeSelection }: AvatarCreationProps) {
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
   
@@ -83,6 +84,18 @@ export function AvatarCreation({ onProfileCreated, ageGroup }: AvatarCreationPro
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/20 via-lavender/20 to-secondary/20 p-4">
       <div className="max-w-4xl mx-auto">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Button
+            variant="outline"
+            onClick={onBackToAgeSelection}
+            className="font-heading flex items-center gap-2"
+          >
+            <ArrowLeft weight="bold" />
+            Back to Age Selection
+          </Button>
+        </div>
+
         {/* Teddy Bear Guide */}
         <div className="text-center mb-8">
           <div className="inline-block p-6 bg-white/80 rounded-3xl shadow-lg">
@@ -93,11 +106,22 @@ export function AvatarCreation({ onProfileCreated, ageGroup }: AvatarCreationPro
             <p className="font-body text-lg text-muted-foreground">
               I'm Teddy, and I'm here to help you create your learning companion!
             </p>
+            <Badge variant="secondary" className="mt-2 font-heading">
+              Age Group: {ageGroup} years
+            </Badge>
           </div>
         </div>
 
         {step === 1 && (
-          <Card className="mx-auto max-w-lg">
+          <div className="space-y-6">
+            {/* Step Indicator */}
+            <div className="text-center">
+              <Badge variant="secondary" className="font-heading">
+                Step 1 of 3: Tell us about yourself
+              </Badge>
+            </div>
+
+            <Card className="mx-auto max-w-lg">
             <CardHeader className="text-center">
               <h2 className="font-heading text-2xl font-semibold text-foreground flex items-center justify-center gap-2">
                 <Heart className="text-accent" weight="fill" />
@@ -140,10 +164,27 @@ export function AvatarCreation({ onProfileCreated, ageGroup }: AvatarCreationPro
               </Button>
             </CardContent>
           </Card>
+          </div>
         )}
 
         {step === 2 && (
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="space-y-6">
+            {/* Step Navigation */}
+            <div className="flex justify-between items-center">
+              <Button
+                variant="outline"
+                onClick={() => setStep(1)}
+                className="font-heading flex items-center gap-2"
+              >
+                <ArrowLeft weight="bold" />
+                Back
+              </Button>
+              <Badge variant="secondary" className="font-heading">
+                Step 2 of 3: Customize Avatar
+              </Badge>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-8">
             {/* Avatar Preview */}
             <Card>
               <CardHeader className="text-center">
@@ -253,10 +294,27 @@ export function AvatarCreation({ onProfileCreated, ageGroup }: AvatarCreationPro
               </CardContent>
             </Card>
           </div>
+          </div>
         )}
 
         {step === 3 && (
-          <Card className="max-w-2xl mx-auto">
+          <div className="space-y-6">
+            {/* Step Navigation */}
+            <div className="flex justify-between items-center">
+              <Button
+                variant="outline"
+                onClick={() => setStep(2)}
+                className="font-heading flex items-center gap-2"
+              >
+                <ArrowLeft weight="bold" />
+                Back to Avatar
+              </Button>
+              <Badge variant="secondary" className="font-heading">
+                Step 3 of 3: Choose Theme
+              </Badge>
+            </div>
+
+            <Card className="max-w-2xl mx-auto">
             <CardHeader className="text-center">
               <h2 className="font-heading text-2xl font-semibold text-foreground">
                 Pick Your Adventure Theme
@@ -295,6 +353,7 @@ export function AvatarCreation({ onProfileCreated, ageGroup }: AvatarCreationPro
               </Button>
             </CardContent>
           </Card>
+          </div>
         )}
       </div>
     </div>

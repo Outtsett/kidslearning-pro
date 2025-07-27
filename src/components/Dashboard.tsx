@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { Calculator, Flask, Book, Palette, Coins, Settings, Star } from '@phosphor-icons/react'
+import { Calculator, Flask, Book, Palette, Coins, Settings, Star, ArrowLeft } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { CustomizationStore } from '@/components/CustomizationStore'
 import type { UserProfile, Subject } from '@/App'
@@ -13,6 +13,7 @@ interface DashboardProps {
   onProfileUpdate: (updater: (profile: UserProfile) => UserProfile) => void
   onActivityStart: (subject: Subject, activityId: string) => void
   onShowParentDashboard: () => void
+  onBackToAgeSelection: () => void
 }
 
 const SUBJECTS = [
@@ -224,7 +225,7 @@ const ACTIVITIES_BY_AGE = {
   }
 }
 
-export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowParentDashboard }: DashboardProps) {
+export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowParentDashboard, onBackToAgeSelection }: DashboardProps) {
   const [showCustomization, setShowCustomization] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
 
@@ -260,6 +261,21 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
   return (
     <div className={`min-h-screen bg-gradient-to-br ${theme.background} p-4`}>
       <div className="max-w-6xl mx-auto space-y-6">
+        {/* Back Button */}
+        <div className="flex justify-between items-center">
+          <Button
+            variant="outline"
+            onClick={onBackToAgeSelection}
+            className="font-heading flex items-center gap-2"
+          >
+            <ArrowLeft weight="bold" />
+            Change Age Group
+          </Button>
+          <Badge variant="secondary" className="font-heading">
+            Age Group: {profile.ageGroup} years
+          </Badge>
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between bg-white/80 rounded-3xl p-6 shadow-lg">
           <div className="flex items-center gap-4">

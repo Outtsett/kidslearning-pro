@@ -71,6 +71,11 @@ function App() {
     setShowParentDashboard(false)
   }
 
+  const handleBackToAgeSelection = () => {
+    setSelectedAgeGroup(null)
+    setProfile(null)
+  }
+
   // If no age group is selected, show age group selection
   if (!selectedAgeGroup) {
     return <AgeGroupSelection onAgeGroupSelected={handleAgeGroupSelected} />
@@ -78,7 +83,7 @@ function App() {
 
   // If age group is selected but no profile exists, show avatar creation
   if (!profile) {
-    return <AvatarCreation onProfileCreated={handleProfileCreated} ageGroup={selectedAgeGroup} />
+    return <AvatarCreation onProfileCreated={handleProfileCreated} ageGroup={selectedAgeGroup} onBackToAgeSelection={handleBackToAgeSelection} />
   }
 
   if (showParentDashboard) {
@@ -108,6 +113,7 @@ function App() {
       onProfileUpdate={setProfile}
       onActivityStart={handleActivityStart}
       onShowParentDashboard={handleShowParentDashboard}
+      onBackToAgeSelection={handleBackToAgeSelection}
     />
   )
 }
