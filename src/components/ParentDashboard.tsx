@@ -34,10 +34,12 @@ import {
   Shield,
   Eye,
   EyeSlash,
-  ChartLine
+  ChartLine,
+  Lightbulb
 } from '@phosphor-icons/react'
 import { UserProfile, Subject, AgeGroup } from '@/App'
 import { useSampleData } from '@/hooks/useSampleData'
+import { useDifficultyEngine } from '@/hooks/useDifficultyEngine'
 
 interface SessionData {
   date: string
@@ -202,8 +204,17 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
     { subject: 'art', targetMinutes: 45, targetActivities: 3, currentMinutes: 0, currentActivities: 0 }
   ])
   const { generateSampleSessions } = useSampleData()
+  const { 
+    performanceMetrics, 
+    getSubjectPerformance, 
+    getLearningInsights,
+    getRecommendedActivities 
+  } = useDifficultyEngine()
   const dashboardRef = useRef<HTMLDivElement>(null)
   const cardsRef = useRef<HTMLDivElement[]>([])
+
+  // Get learning insights if profile exists
+  const learningInsights = profile ? getLearningInsights(profile.ageGroup) : null
 
   // Animation setup
   useEffect(() => {
@@ -489,7 +500,7 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
         {/* Content - Scrollable */}
         <div className="flex-1 overflow-y-auto">
           <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">
                 <BarChart3 size={16} className="mr-2" />
                 Overview
@@ -497,6 +508,10 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
               <TabsTrigger value="subjects">
                 <Brain size={16} className="mr-2" />
                 Subjects
+              </TabsTrigger>
+              <TabsTrigger value="adaptive">
+                <Target size={16} className="mr-2" />
+                Adaptive
               </TabsTrigger>
               <TabsTrigger value="goals">
                 <Target size={16} className="mr-2" />
@@ -661,6 +676,201 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
                   )
                 })}
               </div>
+            </TabsContent>
+
+            <TabsContent value="adaptive" className="space-y-4">
+              {learningInsights && (
+                <>
+                  {/* Overall Adaptive Learning Overview */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Brain size={20} className="text-blue-600" />
+                        Adaptive Learning System
+                      </CardTitle>
+                      <CardDescription>
+                        How the system adjusts to {profile?.name}'s learning patterns
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Overall Progress</p>
+                          <div className="flex items-center gap-2">
+                            <Progress value={learningInsights.overallProgress} className="flex-1 h-3" />
+                            <span className="text-lg font-semibold">
+                              {learningInsights.overallProgress.toFixed(0)}%
+                            </span>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Average Difficulty Level</p>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-lg px-3 py-1">
+                              Level {learningInsights.averageDifficultyLevel.toFixed(1)}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      {learningInsights.strongestSubject && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <div className="flex items-center gap-2">
+                            <Star className="w-5 h-5 text-green-600" weight="fill" />
+                            <span className="font-semibold text-green-800">
+                              Strongest Subject: {learningInsights.strongestSubject.charAt(0).toUpperCase() + learningInsights.strongestSubject.slice(1)}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {learningInsights.subjectsNeedingAttention.length > 0 && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                          <div className="flex items-center gap-2">
+                            <Target className="w-5 h-5 text-yellow-600" />
+                            <span className="font-semibold text-yellow-800">
+                              Needs Focus: {learningInsights.subjectsNeedingAttention.join(', ')}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Award className="w-5 h-5 text-blue-600" />
+                          <span className="font-semibold text-blue-800">
+                            Total Concepts Mastered: {learningInsights.totalMasteredConcepts}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Subject-Specific Adaptive Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(['math', 'reading', 'science', 'art'] as Subject[]).map((subject) => {
+                      const performance = getSubjectPerformance(subject)
+                      const recommendations = getRecommendedActivities(subject, profile.ageGroup)
+                      const SubjectIcon = subjectConfig[subject].icon
+                      const accuracy = performance.totalAttempts > 0 ? (performance.correctAnswers / performance.totalAttempts) * 100 : 0
+
+                      return (
+                        <Card key={subject}>
+                          <CardHeader className="pb-3">
+                            <CardTitle className="flex items-center gap-2 text-base">
+                              <SubjectIcon size={20} className={subjectConfig[subject].color} />
+                              {subject.charAt(0).toUpperCase() + subject.slice(1)}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div className="grid grid-cols-2 gap-3 text-center">
+                              <div>
+                                <p className="text-lg font-bold">{accuracy.toFixed(0)}%</p>
+                                <p className="text-xs text-muted-foreground">Accuracy</p>
+                              </div>
+                              <div>
+                                <p className="text-lg font-bold">Level {performance.difficultyLevel}</p>
+                                <p className="text-xs text-muted-foreground">Current Level</p>
+                              </div>
+                            </div>
+
+                            <div>
+                              <p className="text-sm font-medium mb-1">Current Adaptations:</p>
+                              <div className="space-y-1 text-xs">
+                                <div className="flex items-center justify-between">
+                                  <span>Hints</span>
+                                  <Badge variant={performance.adaptiveSettings.showHints ? "default" : "secondary"}>
+                                    {performance.adaptiveSettings.showHints ? "On" : "Off"}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span>Extended Time</span>
+                                  <Badge variant={performance.adaptiveSettings.extendedTime ? "default" : "secondary"}>
+                                    {performance.adaptiveSettings.extendedTime ? "On" : "Off"}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span>Visual Support</span>
+                                  <Badge variant={performance.adaptiveSettings.visualSupport ? "default" : "secondary"}>
+                                    {performance.adaptiveSettings.visualSupport ? "On" : "Off"}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+
+                            {performance.masteredConcepts.length > 0 && (
+                              <div>
+                                <p className="text-sm font-medium mb-1">Mastered Concepts:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {performance.masteredConcepts.slice(0, 3).map((concept, index) => (
+                                    <Badge key={index} variant="outline" className="text-xs bg-green-50 text-green-700">
+                                      {concept.replace(/_/g, ' ')}
+                                    </Badge>
+                                  ))}
+                                  {performance.masteredConcepts.length > 3 && (
+                                    <Badge variant="outline" className="text-xs">
+                                      +{performance.masteredConcepts.length - 3} more
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {performance.strugglingConcepts.length > 0 && (
+                              <div>
+                                <p className="text-sm font-medium mb-1">Practice Areas:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {performance.strugglingConcepts.slice(0, 2).map((concept, index) => (
+                                    <Badge key={index} variant="outline" className="text-xs bg-yellow-50 text-yellow-700">
+                                      {concept.replace(/_/g, ' ')}
+                                    </Badge>
+                                  ))}
+                                  {performance.strugglingConcepts.length > 2 && (
+                                    <Badge variant="outline" className="text-xs">
+                                      +{performance.strugglingConcepts.length - 2} more
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="bg-muted rounded p-2">
+                              <p className="text-xs text-muted-foreground italic">
+                                "{recommendations.encouragement}"
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+
+                  {/* AI Recommendations */}
+                  {learningInsights.recommendations.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Lightbulb className="w-5 h-5 text-yellow-600" />
+                          AI Recommendations
+                        </CardTitle>
+                        <CardDescription>
+                          System-generated suggestions based on learning patterns
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {learningInsights.recommendations.map((recommendation, index) => (
+                            <div key={index} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                              <div className="w-2 h-2 rounded-full bg-blue-600 mt-2 flex-shrink-0" />
+                              <p className="text-sm text-blue-900">{recommendation}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
+              )}
             </TabsContent>
 
             <TabsContent value="goals" className="space-y-4">

@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { Calculator, Flask, Book, Palette, Coins, Settings, Star, ArrowLeft } from '@phosphor-icons/react'
+import { Calculator, Flask, Book, Palette, Coins, Settings, Star, ArrowLeft, TrendUp } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { CustomizationStore } from '@/components/CustomizationStore'
+import { ProgressInsights } from '@/components/ProgressInsights'
 import { SimpleCharacterScene } from '@/components/3D/SimpleCharacterScene'
 import type { UserProfile, Subject } from '@/App'
 
@@ -258,6 +259,7 @@ function getCompanionDialogue(
 
 export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowParentDashboard, onBackToAgeSelection }: DashboardProps) {
   const [showCustomization, setShowCustomization] = useState(false)
+  const [showInsights, setShowInsights] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
   const [companionEmotion, setCompanionEmotion] = useState<'happy' | 'excited' | 'proud' | 'encouraging' | 'thinking'>('happy')
   const [companionActivity, setCompanionActivity] = useState<'idle' | 'celebrating' | 'explaining' | 'waiting'>('idle')
@@ -350,6 +352,35 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
     )
   }
 
+  if (showInsights) {
+    return (
+      <div className="h-screen bg-gradient-to-br from-primary/20 via-lavender/20 to-secondary/20 flex flex-col">
+        <div className="flex items-center justify-between bg-white/80 rounded-2xl p-3 shadow-lg m-3">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowInsights(false)}
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div>
+              <h1 className="font-heading text-lg font-bold text-foreground">
+                Learning Progress
+              </h1>
+              <p className="font-body text-xs text-muted-foreground">
+                Detailed insights and adaptive settings
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 px-3 pb-3 overflow-y-auto">
+          <ProgressInsights ageGroup={profile.ageGroup} />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div ref={containerRef} className={`h-screen bg-gradient-to-br ${theme.background} flex flex-col`}>
         {/* Top Bar - Fixed Height */}
@@ -379,6 +410,14 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
               <Coins className="w-3 h-3 text-yellow-600" weight="fill" />
               <span className="font-heading font-semibold text-sm">{profile.coins}</span>
             </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowInsights(true)}
+              title="Learning Progress"
+            >
+              <TrendUp className="w-4 h-4" />
+            </Button>
             <Button
               variant="outline"
               size="sm"

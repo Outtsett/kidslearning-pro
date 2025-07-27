@@ -25,6 +25,12 @@ export interface UserProfile {
   unlockedItems: string[]
   progress: Record<Subject, number>
   achievements: string[]
+  learningPreferences?: {
+    preferredDifficulty: 'auto' | 'easy' | 'medium' | 'hard'
+    adaptiveHints: boolean
+    extendedTime: boolean
+    visualLearner: boolean
+  }
 }
 
 export interface ActivityState {
@@ -69,7 +75,13 @@ function App() {
       coins: 0,
       unlockedItems: [],
       progress: { math: 0, science: 0, reading: 0, art: 0 },
-      achievements: []
+      achievements: [],
+      learningPreferences: {
+        preferredDifficulty: 'auto',
+        adaptiveHints: true,
+        extendedTime: ageGroup === '3-5',
+        visualLearner: true
+      }
     }
     setProfile(defaultProfile)
   }

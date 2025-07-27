@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, CheckCircle, Star, Coins } from '@phosphor-icons/react'
+import { ArrowLeft, CheckCircle, Star, Coins, Lightbulb, Clock } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { ReadingRealm } from '@/components/reading/ReadingRealm'
 import { ScienceSafari } from '@/components/science/ScienceSafari'
 import { AIAnimationSystem, useAIAnimation } from '@/components/AIAnimationSystem'
+import { useDifficultyEngine } from '@/hooks/useDifficultyEngine'
 import type { UserProfile, Subject } from '@/App'
 import { useSessionTracking } from '@/hooks/useSessionTracking'
 import { toast } from 'sonner'
@@ -27,6 +28,9 @@ interface Question {
   correctAnswer: string
   type: 'multiple-choice' | 'input' | 'drag-drop'
   explanation?: string
+  concept: string // The learning concept this question tests
+  difficultyLevel: number // 1-5 scale
+  timeLimit?: number // seconds
 }
 
 const SAMPLE_ACTIVITIES: Record<string, Question[]> = {
@@ -37,7 +41,10 @@ const SAMPLE_ACTIVITIES: Record<string, Question[]> = {
       options: ['1', '2', '3', '4'],
       correctAnswer: '3',
       type: 'multiple-choice',
-      explanation: 'Great job! There are 3 apples. Count them: 1, 2, 3!'
+      explanation: 'Great job! There are 3 apples. Count them: 1, 2, 3!',
+      concept: 'counting_small_numbers',
+      difficultyLevel: 1,
+      timeLimit: 30
     },
     {
       id: '2',
@@ -45,7 +52,10 @@ const SAMPLE_ACTIVITIES: Record<string, Question[]> = {
       options: ['3', '4', '5', '6'],
       correctAnswer: '5',
       type: 'multiple-choice',
-      explanation: 'Excellent! You counted 5 stars perfectly!'
+      explanation: 'Excellent! You counted 5 stars perfectly!',
+      concept: 'counting_small_numbers',
+      difficultyLevel: 1,
+      timeLimit: 30
     },
     {
       id: '3',
@@ -53,7 +63,10 @@ const SAMPLE_ACTIVITIES: Record<string, Question[]> = {
       options: ['3', '4', '5', '6'],
       correctAnswer: '5',
       type: 'multiple-choice',
-      explanation: 'Perfect! One hand has 5 fingers!'
+      explanation: 'Perfect! One hand has 5 fingers!',
+      concept: 'number_recognition',
+      difficultyLevel: 2,
+      timeLimit: 25
     }
   ],
   'addition-basic': [
@@ -63,7 +76,10 @@ const SAMPLE_ACTIVITIES: Record<string, Question[]> = {
       options: ['4', '5', '6', '7'],
       correctAnswer: '5',
       type: 'multiple-choice',
-      explanation: 'Great! 2 + 3 = 5. You can count: 2, then add 3 more!'
+      explanation: 'Great! 2 + 3 = 5. You can count: 2, then add 3 more!',
+      concept: 'basic_addition',
+      difficultyLevel: 2,
+      timeLimit: 30
     },
     {
       id: '2',
@@ -71,7 +87,10 @@ const SAMPLE_ACTIVITIES: Record<string, Question[]> = {
       options: ['5', '6', '7', '8'],
       correctAnswer: '6',
       type: 'multiple-choice',
-      explanation: 'Awesome! 4 + 2 = 6 toys in total!'
+      explanation: 'Awesome! 4 + 2 = 6 toys in total!',
+      concept: 'word_problems',
+      difficultyLevel: 3,
+      timeLimit: 45
     }
   ],
   'animals-sounds': [
@@ -81,7 +100,10 @@ const SAMPLE_ACTIVITIES: Record<string, Question[]> = {
       options: ['Woof', 'Meow', 'Moo', 'Roar'],
       correctAnswer: 'Moo',
       type: 'multiple-choice',
-      explanation: 'That\'s right! Cows say "Moo"! 🐄'
+      explanation: 'That\'s right! Cows say "Moo"! 🐄',
+      concept: 'animal_sounds',
+      difficultyLevel: 1,
+      timeLimit: 20
     },
     {
       id: '2',
@@ -89,7 +111,10 @@ const SAMPLE_ACTIVITIES: Record<string, Question[]> = {
       options: ['Bark', 'Meow', 'Quack', 'Chirp'],
       correctAnswer: 'Meow',
       type: 'multiple-choice',
-      explanation: 'Perfect! Cats say "Meow"! 🐱'
+      explanation: 'Perfect! Cats say "Meow"! 🐱',
+      concept: 'animal_sounds',
+      difficultyLevel: 1,
+      timeLimit: 20
     }
   ]
 }
@@ -135,12 +160,64 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
   const [score, setScore] = useState(0)
   const [completed, setCompleted] = useState(false)
   const [startTime] = useState(Date.now())
+  const [questionStartTime, setQuestionStartTime] = useState(Date.now())
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
+  const [showHint, setShowHint] = useState(false)
+  const [questionTimes, setQuestionTimes] = useState<number[]>([])
+  
   const { recordSession } = useSessionTracking()
   const { trigger, triggerAnimation } = useAIAnimation()
+  const { 
+    getSubjectPerformance, 
+    getRecommendedActivities, 
+    recordPerformance 
+  } = useDifficultyEngine()
 
   const questions = SAMPLE_ACTIVITIES[activityId] || SAMPLE_ACTIVITIES['counting-1-10']
   const currentQuestion = questions[currentQuestionIndex]
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100
+  
+  // Get adaptive settings for current subject
+  const subjectPerformance = getSubjectPerformance(subject)
+  const recommendations = getRecommendedActivities(subject, profile.ageGroup)
+  const shouldShowHints = subjectPerformance.adaptiveSettings.showHints
+  const timeLimit = currentQuestion.timeLimit || recommendations.recommendedSettings.timeLimit
+
+  // Timer effect
+  useEffect(() => {
+    if (timeLimit && !showFeedback && !completed) {
+      setTimeRemaining(timeLimit)
+      const timer = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev && prev <= 1) {
+            // Time's up - auto submit if there's a selected answer, otherwise mark as incorrect
+            if (selectedAnswer) {
+              handleSubmitAnswer()
+            } else {
+              handleTimeUp()
+            }
+            return null
+          }
+          return prev ? prev - 1 : null
+        })
+      }, 1000)
+
+      return () => clearInterval(timer)
+    }
+  }, [currentQuestionIndex, showFeedback, completed, timeLimit])
+
+  // Reset question start time when moving to next question
+  useEffect(() => {
+    setQuestionStartTime(Date.now())
+    setShowHint(false)
+  }, [currentQuestionIndex])
+
+  const handleTimeUp = () => {
+    setIsCorrect(false)
+    setShowFeedback(true)
+    triggerAnimation('time_up', 'encouraging')
+    toast.error("Time's up! Don't worry, keep trying! ⏰")
+  }
 
   const getRandomEncouragement = () => {
     return ENCOURAGEMENT_MESSAGES[Math.floor(Math.random() * ENCOURAGEMENT_MESSAGES.length)]
@@ -152,8 +229,12 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
 
   const handleSubmitAnswer = () => {
     const correct = selectedAnswer === currentQuestion.correctAnswer
+    const timeSpent = (Date.now() - questionStartTime) / 1000 // Convert to seconds
+    
+    setQuestionTimes((prev) => [...prev, timeSpent])
     setIsCorrect(correct)
     setShowFeedback(true)
+    setTimeRemaining(null) // Stop timer
     
     if (correct) {
       setScore(score + 1)
@@ -170,6 +251,7 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
       setCurrentQuestionIndex(currentQuestionIndex + 1)
       setSelectedAnswer('')
       setShowFeedback(false)
+      setTimeRemaining(null)
     } else {
       handleCompleteActivity()
     }
@@ -180,15 +262,32 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
     triggerAnimation('achievement', 'excited')
     const percentage = (score / questions.length) * 100
     const coinsEarned = Math.max(10, Math.floor(percentage / 10) * 5)
-    const duration = Math.round((Date.now() - startTime) / 60000) // Convert to minutes
+    const totalDuration = Math.round((Date.now() - startTime) / 60000) // Convert to minutes
+    const totalTimeSpent = questionTimes.reduce((sum, time) => sum + time, 0)
+    const conceptsEncountered = questions.map(q => q.concept)
     
-    // Record the learning session
-    recordSession(subject, Math.max(1, duration), questions.length, coinsEarned, percentage)
+    // Record performance for difficulty adjustment
+    recordPerformance(
+      subject,
+      questions.length,
+      score,
+      totalTimeSpent,
+      conceptsEncountered,
+      profile.ageGroup
+    )
+    
+    // Record the learning session for tracking
+    recordSession(subject, Math.max(1, totalDuration), questions.length, coinsEarned, percentage)
     
     setTimeout(() => {
       onComplete(coinsEarned)
       toast.success(`Activity completed! You earned ${coinsEarned} coins! 🪙`)
     }, 2000)
+  }
+
+  const handleShowHint = () => {
+    setShowHint(true)
+    triggerAnimation('hint_shown', 'helpful')
   }
 
   if (completed) {
@@ -275,7 +374,7 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
                   {subject} Activity
                 </h1>
                 <p className="font-body text-xs text-muted-foreground">
-                  Question {currentQuestionIndex + 1} of {questions.length}
+                  Question {currentQuestionIndex + 1} of {questions.length} • Level {subjectPerformance.difficultyLevel}
                 </p>
               </div>
             </div>
@@ -284,6 +383,12 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
               <Badge variant="outline" className="text-xs">
                 {score}/{questions.length}
               </Badge>
+              {timeRemaining !== null && (
+                <Badge variant={timeRemaining <= 10 ? "destructive" : "secondary"} className="text-xs">
+                  <Clock className="w-3 h-3 mr-1" />
+                  {timeRemaining}s
+                </Badge>
+              )}
             </div>
           </div>
 
@@ -316,6 +421,22 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
                       : `"Take your time, ${profile.name}. You've got this!"`
                     }
                   </p>
+                  {shouldShowHints && !showFeedback && !showHint && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleShowHint}
+                      className="mt-1 h-6 text-xs p-1"
+                    >
+                      <Lightbulb className="w-3 h-3 mr-1" />
+                      Need a hint?
+                    </Button>
+                  )}
+                  {showHint && (
+                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+                      💡 <strong>Hint:</strong> {currentQuestion.explanation?.split('.')[0] || "Think about what you know!"}
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
