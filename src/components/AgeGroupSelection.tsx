@@ -68,8 +68,8 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
   }
 
   return (
-    <div className={`h-screen bg-gradient-to-br ${selectedGroup ? AGE_GROUPS.find(g => g.id === selectedGroup)?.colors || 'from-primary/20 via-lavender/20 to-secondary/20' : 'from-primary/20 via-lavender/20 to-secondary/20'} transition-all duration-1000 overflow-hidden`}>
-      <div className="h-full flex flex-col p-4">
+    <div className={`min-h-screen bg-gradient-to-br ${selectedGroup ? AGE_GROUPS.find(g => g.id === selectedGroup)?.colors || 'from-primary/20 via-lavender/20 to-secondary/20' : 'from-primary/20 via-lavender/20 to-secondary/20'} transition-all duration-1000 overflow-y-auto`}>
+      <div className="flex flex-col p-4 min-h-screen">
         {/* Welcome Header - Fixed Height */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -88,7 +88,7 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
         </motion.div>
 
         {/* Age Group Selection - Flexible Height */}
-        <div className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 flex flex-col">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -102,7 +102,7 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
             </h2>
           </motion.div>
 
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 min-h-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             {AGE_GROUPS.map((group, index) => (
               <motion.div
                 key={group.id}
@@ -118,7 +118,7 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
                     selectedGroup === group.id 
                       ? 'ring-2 ring-primary shadow-xl' 
                       : 'hover:shadow-lg'
-                  } ${group.cardColors} flex flex-col w-full`}
+                  } ${group.cardColors} flex flex-col w-full h-full`}
                   onClick={() => setSelectedGroup(group.id)}
                 >
                   <CardHeader className="text-center pb-2 flex-shrink-0">
@@ -194,7 +194,7 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mt-4 flex-shrink-0"
+            className="text-center mt-6 pb-4"
           >
             <Card className="inline-block bg-white/90 border-none shadow-xl">
               <CardContent className="p-4">
