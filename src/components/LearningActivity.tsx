@@ -196,53 +196,61 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
     const coinsEarned = Math.max(10, Math.floor(percentage / 10) * 5)
 
     return (
-      <div className="h-screen bg-gradient-to-br from-primary/20 via-lavender/20 to-secondary/20 p-4 flex items-center justify-center overflow-hidden">
-        <Card className="max-w-md w-full text-center">
-          <CardHeader className="pb-3">
-            <div className="text-4xl mb-2">🎉</div>
-            <CardTitle className="font-heading text-xl font-bold text-foreground">
-              Amazing Work, {profile.name}!
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <AvatarDisplay avatar={profile.avatar} size="medium" className="mx-auto" />
-              <div className="text-2xl">😊</div>
-              <p className="font-body text-sm text-foreground">
-                "{getRandomEncouragement()}"
-              </p>
-            </div>
-
-            <div className="bg-muted rounded-lg p-3 space-y-2">
-              <div className="flex items-center justify-center gap-2">
-                <Star className="w-4 h-4 text-yellow-500" weight="fill" />
-                <span className="font-heading text-sm font-semibold">
-                  {score}/{questions.length} correct!
-                </span>
+      <AIAnimationSystem
+        ageGroup={profile.ageGroup}
+        subject={subject}
+        userProgress={100}
+        emotion="proud"
+        trigger="celebration"
+      >
+        <div className="h-screen bg-gradient-to-br from-primary/20 via-lavender/20 to-secondary/20 p-4 flex items-center justify-center overflow-hidden">
+          <Card className="max-w-md w-full text-center">
+            <CardHeader className="pb-3">
+              <div className="text-4xl mb-2">🎉</div>
+              <CardTitle className="font-heading text-xl font-bold text-foreground">
+                Amazing Work, {profile.name}!
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <AvatarDisplay avatar={profile.avatar} size="medium" className="mx-auto" />
+                <div className="text-2xl">😊</div>
+                <p className="font-body text-sm text-foreground">
+                  "{getRandomEncouragement()}"
+                </p>
               </div>
-              <div className="flex items-center justify-center gap-2">
-                <Coins className="w-4 h-4 text-yellow-600" weight="fill" />
-                <span className="font-heading text-sm font-semibold">
-                  +{coinsEarned} coins!
-                </span>
-              </div>
-              <Progress value={percentage} className="h-2" />
-              <p className="text-xs text-muted-foreground">
-                {percentage.toFixed(0)}% Score
-              </p>
-            </div>
 
-            <div className="space-y-2">
-              <p className="font-body text-xs text-muted-foreground">
-                Keep learning to unlock more awesome items!
-              </p>
-              <Button onClick={onBack} className="w-full font-heading">
-                Continue Learning
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              <div className="bg-muted rounded-lg p-3 space-y-2">
+                <div className="flex items-center justify-center gap-2">
+                  <Star className="w-4 h-4 text-yellow-500" weight="fill" />
+                  <span className="font-heading text-sm font-semibold">
+                    {score}/{questions.length} correct!
+                  </span>
+                </div>
+                <div className="flex items-center justify-center gap-2">
+                  <Coins className="w-4 h-4 text-yellow-600" weight="fill" />
+                  <span className="font-heading text-sm font-semibold">
+                    +{coinsEarned} coins!
+                  </span>
+                </div>
+                <Progress value={percentage} className="h-2" />
+                <p className="text-xs text-muted-foreground">
+                  {percentage.toFixed(0)}% Score
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <p className="font-body text-xs text-muted-foreground">
+                  Keep learning to unlock more awesome items!
+                </p>
+                <Button onClick={onBack} className="w-full font-heading">
+                  Continue Learning
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </AIAnimationSystem>
     )
   }
 
