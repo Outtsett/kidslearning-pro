@@ -7,6 +7,7 @@ import { ArrowLeft, CheckCircle, Star, Coins } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { ReadingRealm } from '@/components/reading/ReadingRealm'
 import { ScienceSafari } from '@/components/science/ScienceSafari'
+import { AIAnimationSystem, useAIAnimation } from '@/components/AIAnimationSystem'
 import type { UserProfile, Subject } from '@/App'
 import { useSessionTracking } from '@/hooks/useSessionTracking'
 import { toast } from 'sonner'
@@ -135,6 +136,7 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
   const [completed, setCompleted] = useState(false)
   const [startTime] = useState(Date.now())
   const { recordSession } = useSessionTracking()
+  const { trigger, triggerAnimation } = useAIAnimation()
 
   const questions = SAMPLE_ACTIVITIES[activityId] || SAMPLE_ACTIVITIES['counting-1-10']
   const currentQuestion = questions[currentQuestionIndex]
@@ -155,8 +157,10 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
     
     if (correct) {
       setScore(score + 1)
+      triggerAnimation('correct_answer', 'proud')
       toast.success("Correct! 🎉")
     } else {
+      triggerAnimation('wrong_answer', 'encouraging')
       toast.error("Try again! You've got this! 💪")
     }
   }
@@ -173,6 +177,7 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
 
   const handleCompleteActivity = () => {
     setCompleted(true)
+    triggerAnimation('achievement', 'excited')
     const percentage = (score / questions.length) * 100
     const coinsEarned = Math.max(10, Math.floor(percentage / 10) * 5)
     const duration = Math.round((Date.now() - startTime) / 60000) // Convert to minutes
@@ -242,30 +247,37 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-primary/20 via-lavender/20 to-secondary/20 overflow-hidden">
-      <div className="h-full flex flex-col p-3">
-        {/* Header - Fixed */}
-        <div className="flex items-center justify-between bg-white/80 rounded-2xl p-3 shadow-lg mb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={onBack}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div>
-              <h1 className="font-heading text-lg font-bold text-foreground capitalize">
-                {subject} Activity
-              </h1>
-              <p className="font-body text-xs text-muted-foreground">
-                Question {currentQuestionIndex + 1} of {questions.length}
-              </p>
+    <AIAnimationSystem
+      ageGroup={profile.ageGroup}
+      subject={subject}
+      userProgress={progress}
+      emotion={isCorrect ? 'proud' : showFeedback && !isCorrect ? 'encouraging' : 'happy'}
+      trigger={trigger.type}
+    >
+      <div className="h-screen bg-gradient-to-br from-primary/20 via-lavender/20 to-secondary/20 overflow-hidden">
+        <div className="h-full flex flex-col p-3">
+          {/* Header - Fixed */}
+          <div className="flex items-center justify-between bg-white/80 rounded-2xl p-3 shadow-lg mb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={onBack}>
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <div>
+                <h1 className="font-heading text-lg font-bold text-foreground capitalize">
+                  {subject} Activity
+                </h1>
+                <p className="font-body text-xs text-muted-foreground">
+                  Question {currentQuestionIndex + 1} of {questions.length}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <AvatarDisplay avatar={profile.avatar} size="small" />
+              <Badge variant="outline" className="text-xs">
+                {score}/{questions.length}
+              </Badge>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <AvatarDisplay avatar={profile.avatar} size="small" />
-            <Badge variant="outline" className="text-xs">
-              {score}/{questions.length}
-            </Badge>
-          </div>
-        </div>
 
         {/* Progress Bar */}
         <Card className="mb-3">
@@ -362,6 +374,6 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
           </Card>
         </div>
       </div>
-    </div>
+    </AIAnimationSystem>
   )
 }
