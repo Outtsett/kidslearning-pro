@@ -552,11 +552,11 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+    <div className="h-screen bg-gradient-to-br from-background via-card to-muted overflow-hidden">
+      <div className="h-full flex flex-col p-4">
+        {/* Header - Fixed */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="sm"
@@ -564,215 +564,222 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
               className="flex items-center gap-2"
             >
               <ArrowLeft size={16} />
-              Back to App
+              Back
             </Button>
             <div>
-              <h1 className="text-3xl font-heading font-bold text-foreground">
+              <h1 className="text-xl font-heading font-bold text-foreground">
                 Parent Dashboard
               </h1>
-              <p className="text-muted-foreground">
-                Monitoring {profile.name}'s learning journey
+              <p className="text-sm text-muted-foreground">
+                {profile.name}'s learning progress
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="text-sm">
-              Age Group: {profile.ageGroup}
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              Age {profile.ageGroup}
             </Badge>
             {sessions.length === 0 && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={generateSampleSessions}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1"
               >
-                <Database size={16} />
-                Load Demo Data
+                <Database size={14} />
+                Demo
               </Button>
             )}
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="progress">Progress</TabsTrigger>
-            <TabsTrigger value="trends">Trends</TabsTrigger>
-            <TabsTrigger value="goals">Goals</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
-          </TabsList>
+        {/* Main Content - Flexible */}
+        <div className="flex-1 min-h-0">
+          <Tabs defaultValue="overview" className="h-full flex flex-col">
+            <TabsList className="grid w-full grid-cols-5 mb-4">
+              <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
+              <TabsTrigger value="progress" className="text-xs">Progress</TabsTrigger>
+              <TabsTrigger value="trends" className="text-xs">Trends</TabsTrigger>
+              <TabsTrigger value="goals" className="text-xs">Goals</TabsTrigger>
+              <TabsTrigger value="reports" className="text-xs">Reports</TabsTrigger>
+            </TabsList>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">This Week</CardTitle>
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalTime}m</div>
-                  <p className="text-xs text-muted-foreground">
-                    {stats.sessionsThisWeek} sessions
-                  </p>
-                </CardContent>
-              </Card>
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="flex-1 min-h-0 overflow-auto">
+              <div className="space-y-4">
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+                      <CardTitle className="text-xs font-medium">This Week</CardTitle>
+                      <Clock className="h-3 w-3 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent className="p-3 pt-0">
+                      <div className="text-lg font-bold">{stats.totalTime}m</div>
+                      <p className="text-xs text-muted-foreground">
+                        {stats.sessionsThisWeek} sessions
+                      </p>
+                    </CardContent>
+                  </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Activities</CardTitle>
-                  <Target className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalActivities}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Completed this week
-                  </p>
-                </CardContent>
-              </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+                      <CardTitle className="text-xs font-medium">Activities</CardTitle>
+                      <Target className="h-3 w-3 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent className="p-3 pt-0">
+                      <div className="text-lg font-bold">{stats.totalActivities}</div>
+                      <p className="text-xs text-muted-foreground">
+                        Completed
+                      </p>
+                    </CardContent>
+                  </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Average Score</CardTitle>
-                  <Star className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{Math.round(stats.averageScore)}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Out of 100 points
-                  </p>
-                </CardContent>
-              </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+                      <CardTitle className="text-xs font-medium">Score</CardTitle>
+                      <Star className="h-3 w-3 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent className="p-3 pt-0">
+                      <div className="text-lg font-bold">{Math.round(stats.averageScore)}</div>
+                      <p className="text-xs text-muted-foreground">
+                        Average
+                      </p>
+                    </CardContent>
+                  </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Learning Streak</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.streakDays.current}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Days in a row
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+                      <CardTitle className="text-xs font-medium">Streak</CardTitle>
+                      <TrendingUp className="h-3 w-3 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent className="p-3 pt-0">
+                      <div className="text-lg font-bold">{stats.streakDays.current}</div>
+                      <p className="text-xs text-muted-foreground">
+                        Days
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
 
-            {/* Subject Breakdown */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Subject Performance This Week</CardTitle>
-                <CardDescription>
-                  Time spent and accuracy by subject
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {stats.subjectBreakdown.map((subject) => {
-                    const config = subjectConfig[subject.subject]
-                    const Icon = config.icon
-                    return (
-                      <div key={subject.subject} className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg bg-muted ${config.color}`}>
-                            <Icon size={20} />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex justify-between items-center">
-                              <span className="font-medium">{config.name}</span>
-                              <span className="text-sm text-muted-foreground">
-                                {subject.time}m
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                              <span className="text-muted-foreground">
-                                {subject.activities} activities • {Math.round(subject.accuracy)}% accuracy
-                              </span>
-                              <div className="flex items-center gap-1">
-                                <span className="text-muted-foreground">Score:</span>
-                                <span className="font-medium">{Math.round(subject.score)}</span>
+                {/* Subject Breakdown */}
+                <Card>
+                  <CardHeader className="p-3">
+                    <CardTitle className="text-sm">Subject Performance</CardTitle>
+                    <CardDescription className="text-xs">
+                      This week's progress by subject
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0">
+                    <div className="space-y-3">
+                      {stats.subjectBreakdown.map((subject) => {
+                        const config = subjectConfig[subject.subject]
+                        const Icon = config.icon
+                        return (
+                          <div key={subject.subject} className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <div className={`p-1 rounded ${config.color}`}>
+                                <Icon size={14} />
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm font-medium">{config.name}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {subject.time}m
+                                  </span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs">
+                                  <span className="text-muted-foreground">
+                                    {subject.activities} activities
+                                  </span>
+                                  <span className="text-muted-foreground">
+                                    {Math.round(subject.accuracy)}% • {Math.round(subject.score)}pts
+                                  </span>
+                                </div>
                               </div>
                             </div>
+                            <Progress value={Math.round(subject.accuracy)} className="h-1" />
                           </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Progress Tab */}
-          <TabsContent value="progress" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Learning Progress</CardTitle>
-                <CardDescription>
-                  Track improvement across all subjects
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {(Object.keys(subjectConfig) as Subject[]).map((subject) => {
-                  const config = subjectConfig[subject]
-                  const Icon = config.icon
-                  const progress = profile.progress[subject] || 0
-                  
-                  return (
-                    <div key={subject} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg bg-muted ${config.color}`}>
-                            <Icon size={20} />
-                          </div>
-                          <span className="font-medium">{config.name}</span>
-                        </div>
-                        <span className="text-sm font-medium">{progress}%</span>
-                      </div>
-                      <Progress value={progress} className="h-2" />
+                        )
+                      })}
                     </div>
-                  )
-                })}
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Achievements</CardTitle>
-                <CardDescription>
-                  Celebrate your child's learning milestones
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {profile.achievements.length > 0 ? (
-                    profile.achievements.map((achievement, index) => (
-                      <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-muted">
-                        <Award className="text-accent" size={24} />
-                        <span className="font-medium">{achievement}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-muted-foreground col-span-2">
-                      No achievements yet. Keep learning to unlock rewards!
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+            {/* Progress Tab */}
+            <TabsContent value="progress" className="flex-1 min-h-0 overflow-auto">
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader className="p-3">
+                    <CardTitle className="text-sm">Learning Progress</CardTitle>
+                    <CardDescription className="text-xs">
+                      Overall improvement across subjects
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0 space-y-3">
+                    {(Object.keys(subjectConfig) as Subject[]).map((subject) => {
+                      const config = subjectConfig[subject]
+                      const Icon = config.icon
+                      const progress = profile.progress[subject] || 0
+                      
+                      return (
+                        <div key={subject} className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className={`p-1 rounded ${config.color}`}>
+                                <Icon size={14} />
+                              </div>
+                              <span className="text-sm font-medium">{config.name}</span>
+                            </div>
+                            <span className="text-sm font-medium">{progress}%</span>
+                          </div>
+                          <Progress value={progress} className="h-1" />
+                        </div>
+                      )
+                    })}
+                  </CardContent>
+                </Card>
 
-          {/* Trends Tab */}
-          <TabsContent value="trends" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ChartLine size={20} />
-                  Difficulty Progression & Trends
-                </CardTitle>
-                <CardDescription>
-                  Track how your child's performance and difficulty levels are changing over time
+                <Card>
+                  <CardHeader className="p-3">
+                    <CardTitle className="text-sm">Achievements</CardTitle>
+                    <CardDescription className="text-xs">
+                      Learning milestones reached
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0">
+                    <div className="space-y-2">
+                      {profile.achievements.length > 0 ? (
+                        profile.achievements.slice(0, 3).map((achievement, index) => (
+                          <div key={index} className="flex items-center gap-2 p-2 rounded-lg bg-muted">
+                            <Award className="text-accent" size={16} />
+                            <span className="text-sm font-medium">{achievement}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          Keep learning to unlock achievements!
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Trends Tab */}
+            <TabsContent value="trends" className="flex-1 min-h-0 overflow-auto">
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader className="p-3">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <ChartLine size={16} />
+                      Difficulty & Performance Trends
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      How performance changes over time
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">

@@ -259,40 +259,34 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${theme.background} p-4`}>
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Back Button */}
-        <div className="flex justify-between items-center">
-          <Button
-            variant="outline"
-            onClick={onBackToAgeSelection}
-            className="font-heading flex items-center gap-2"
-          >
-            <ArrowLeft weight="bold" />
-            Change Age Group
-          </Button>
-          <Badge variant="secondary" className="font-heading">
-            Age Group: {profile.ageGroup} years
-          </Badge>
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center justify-between bg-white/80 rounded-3xl p-6 shadow-lg">
-          <div className="flex items-center gap-4">
-            <AvatarDisplay avatar={profile.avatar} size="medium" />
+    <div className={`h-screen bg-gradient-to-br ${theme.background} overflow-hidden`}>
+      <div className="h-full flex flex-col p-3">
+        {/* Top Bar - Fixed Height */}
+        <div className="flex justify-between items-center bg-white/80 rounded-2xl p-3 shadow-lg mb-3">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onBackToAgeSelection}
+              className="font-heading flex items-center gap-1"
+            >
+              <ArrowLeft weight="bold" className="w-4 h-4" />
+              Age
+            </Button>
+            <AvatarDisplay avatar={profile.avatar} size="small" />
             <div>
-              <h1 className="font-heading text-2xl font-bold text-foreground">
-                Welcome back, {profile.name}!
+              <h1 className="font-heading text-lg font-bold text-foreground">
+                Hi {profile.name}!
               </h1>
-              <p className="font-body text-muted-foreground">
-                Ready for today's learning adventure?
-              </p>
+              <Badge variant="secondary" className="text-xs">
+                Age {profile.ageGroup}
+              </Badge>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Badge variant="secondary" className="flex items-center gap-2 p-2">
-              <Coins className="w-4 h-4 text-yellow-600" weight="fill" />
-              <span className="font-heading font-semibold">{profile.coins}</span>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="flex items-center gap-1 p-1">
+              <Coins className="w-3 h-3 text-yellow-600" weight="fill" />
+              <span className="font-heading font-semibold text-sm">{profile.coins}</span>
             </Badge>
             <Button
               variant="outline"
@@ -300,146 +294,123 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
               onClick={() => setShowCustomization(true)}
             >
               <Settings className="w-4 h-4" />
-              Customize
             </Button>
             <Button
               variant="secondary"
               size="sm"
               onClick={onShowParentDashboard}
-              className="hidden md:flex"
+              className="hidden sm:flex"
             >
-              📊 Parent View
+              📊
             </Button>
           </div>
         </div>
 
-        {/* Avatar Companion */}
-        <Card className="bg-gradient-to-r from-primary/20 to-secondary/20 border-none">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="text-4xl">{theme.companionEmoji}</div>
-              <div className="flex-1">
-                <p className="font-body text-lg text-foreground">
-                  {theme.companionMessage(profile.name)}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Progress Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {theme.subjects.map((subject) => {
-            const progress = profile.progress[subject.id]
-            return (
-              <Card key={subject.id} className="text-center">
-                <CardContent className="p-4">
-                  <div className={`w-12 h-12 rounded-full ${subject.color} flex items-center justify-center mx-auto mb-2`}>
-                    <subject.icon className="w-6 h-6" weight="bold" />
+        {/* Main Content Area - Flexible Height */}
+        <div className="flex-1 min-h-0">
+          {!selectedSubject ? (
+            <div className="h-full grid grid-rows-[auto_1fr] gap-3">
+              {/* Companion Message */}
+              <Card className="bg-gradient-to-r from-primary/20 to-secondary/20 border-none">
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">{theme.companionEmoji}</div>
+                    <p className="font-body text-sm text-foreground">
+                      {theme.companionMessage(profile.name)}
+                    </p>
                   </div>
-                  <h3 className="font-heading font-semibold text-foreground mb-1">
-                    {subject.name}
-                  </h3>
-                  <Progress 
-                    value={progress} 
-                    className="h-2 mb-1"
-                  />
-                  <p className="text-xs text-muted-foreground">{progress}% Complete</p>
                 </CardContent>
               </Card>
-            )
-          })}
+
+              {/* Subject Grid */}
+              <div className="grid grid-cols-2 gap-3 h-full">
+                {theme.subjects.map((subject) => {
+                  const progress = profile.progress[subject.id]
+                  return (
+                    <Card 
+                      key={subject.id}
+                      className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 flex flex-col"
+                      onClick={() => setSelectedSubject(subject.id)}
+                    >
+                      <CardContent className="p-4 flex flex-col items-center justify-center h-full text-center">
+                        <div className={`w-12 h-12 rounded-full ${subject.color} flex items-center justify-center mb-2`}>
+                          <subject.icon className="w-6 h-6" weight="bold" />
+                        </div>
+                        <h3 className="font-heading font-semibold text-foreground mb-2">
+                          {subject.name}
+                        </h3>
+                        <p className="font-body text-xs text-muted-foreground mb-2 line-clamp-2">
+                          {subject.description}
+                        </p>
+                        <Progress 
+                          value={progress} 
+                          className="h-2 w-full mb-1"
+                        />
+                        <p className="text-xs text-muted-foreground">{progress}%</p>
+                        <Badge variant="outline" className="mt-2 text-xs">
+                          {activities[subject.id].length} Activities
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="h-full flex flex-col">
+              {/* Activity Header */}
+              <div className="flex items-center gap-3 mb-3">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setSelectedSubject(null)}
+                >
+                  ← Back
+                </Button>
+                <h2 className="font-heading text-lg font-semibold text-foreground">
+                  {theme.subjects.find(s => s.id === selectedSubject)?.name} Activities
+                </h2>
+              </div>
+
+              {/* Activities Grid */}
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 overflow-hidden">
+                {activities[selectedSubject].map((activity) => (
+                  <Card 
+                    key={activity.id}
+                    className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 flex flex-col"
+                    onClick={() => onActivityStart(selectedSubject, activity.id)}
+                  >
+                    <CardContent className="p-4 flex flex-col justify-between h-full">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-heading text-sm font-semibold">
+                            {activity.name}
+                          </h3>
+                          <div className="flex">
+                            {getDifficultyStars(activity.difficulty)}
+                          </div>
+                        </div>
+                      </div>
+                      <Button size="sm" className="w-full font-heading mt-auto">
+                        Start
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Subject Selection */}
-        {!selectedSubject ? (
-          <div>
-            <h2 className="font-heading text-xl font-semibold text-foreground mb-4">
-              Choose Your Subject
-            </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {theme.subjects.map((subject) => (
-                <Card 
-                  key={subject.id}
-                  className="cursor-pointer hover:shadow-lg transition-all hover:scale-105"
-                  onClick={() => setSelectedSubject(subject.id)}
-                >
-                  <CardHeader className="text-center pb-2">
-                    <div className={`w-16 h-16 rounded-full ${subject.color} flex items-center justify-center mx-auto mb-3`}>
-                      <subject.icon className="w-8 h-8" weight="bold" />
-                    </div>
-                    <CardTitle className="font-heading text-lg">{subject.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center pt-0">
-                    <p className="font-body text-sm text-muted-foreground mb-3">
-                      {subject.description}
-                    </p>
-                    <Badge variant="outline">
-                      {activities[subject.id].length} Activities
-                    </Badge>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div className="flex items-center gap-4 mb-6">
-              <Button 
-                variant="outline" 
-                onClick={() => setSelectedSubject(null)}
-              >
-                ← Back
-              </Button>
-              <h2 className="font-heading text-xl font-semibold text-foreground">
-                {theme.subjects.find(s => s.id === selectedSubject)?.name} Activities
-              </h2>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {activities[selectedSubject].map((activity) => (
-                <Card 
-                  key={activity.id}
-                  className="cursor-pointer hover:shadow-lg transition-all hover:scale-105"
-                  onClick={() => onActivityStart(selectedSubject, activity.id)}
-                >
-                  <CardHeader>
-                    <CardTitle className="font-heading text-lg flex items-center justify-between">
-                      {activity.name}
-                      <div className="flex">
-                        {getDifficultyStars(activity.difficulty)}
-                      </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Button className="w-full font-heading">
-                      Start Activity
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Mobile Parent Dashboard Access */}
-        <div className="md:hidden mt-8">
-          <Card className="bg-gradient-to-r from-muted/50 to-card border-dashed">
-            <CardContent className="p-4">
-              <div className="text-center space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  For parents: Monitor learning progress
-                </p>
-                <Button
-                  variant="secondary"
-                  onClick={onShowParentDashboard}
-                  className="w-full"
-                >
-                  📊 View Parent Dashboard
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Parent Dashboard Access - Mobile Only */}
+        <div className="sm:hidden mt-2">
+          <Button
+            variant="secondary"
+            onClick={onShowParentDashboard}
+            className="w-full h-8 text-xs"
+          >
+            📊 Parent View
+          </Button>
         </div>
       </div>
     </div>

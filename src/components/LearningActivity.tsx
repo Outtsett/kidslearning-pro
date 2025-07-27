@@ -191,44 +191,44 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
     const coinsEarned = Math.max(10, Math.floor(percentage / 10) * 5)
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/20 via-lavender/20 to-secondary/20 p-4 flex items-center justify-center">
-        <Card className="max-w-lg w-full text-center">
-          <CardHeader>
-            <div className="text-6xl mb-4">🎉</div>
-            <CardTitle className="font-heading text-2xl font-bold text-foreground">
+      <div className="h-screen bg-gradient-to-br from-primary/20 via-lavender/20 to-secondary/20 p-4 flex items-center justify-center overflow-hidden">
+        <Card className="max-w-md w-full text-center">
+          <CardHeader className="pb-3">
+            <div className="text-4xl mb-2">🎉</div>
+            <CardTitle className="font-heading text-xl font-bold text-foreground">
               Amazing Work, {profile.name}!
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
-              <AvatarDisplay avatar={profile.avatar} size="large" className="mx-auto" />
-              <div className="text-4xl">😊</div>
-              <p className="font-body text-lg text-foreground">
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <AvatarDisplay avatar={profile.avatar} size="medium" className="mx-auto" />
+              <div className="text-2xl">😊</div>
+              <p className="font-body text-sm text-foreground">
                 "{getRandomEncouragement()}"
               </p>
             </div>
 
-            <div className="bg-muted rounded-lg p-4 space-y-3">
+            <div className="bg-muted rounded-lg p-3 space-y-2">
               <div className="flex items-center justify-center gap-2">
-                <Star className="w-5 h-5 text-yellow-500" weight="fill" />
-                <span className="font-heading text-lg font-semibold">
-                  You got {score} out of {questions.length} correct!
+                <Star className="w-4 h-4 text-yellow-500" weight="fill" />
+                <span className="font-heading text-sm font-semibold">
+                  {score}/{questions.length} correct!
                 </span>
               </div>
               <div className="flex items-center justify-center gap-2">
-                <Coins className="w-5 h-5 text-yellow-600" weight="fill" />
-                <span className="font-heading text-lg font-semibold">
-                  Earned {coinsEarned} coins!
+                <Coins className="w-4 h-4 text-yellow-600" weight="fill" />
+                <span className="font-heading text-sm font-semibold">
+                  +{coinsEarned} coins!
                 </span>
               </div>
-              <Progress value={percentage} className="h-3" />
-              <p className="text-sm text-muted-foreground">
+              <Progress value={percentage} className="h-2" />
+              <p className="text-xs text-muted-foreground">
                 {percentage.toFixed(0)}% Score
               </p>
             </div>
 
             <div className="space-y-2">
-              <p className="font-body text-muted-foreground">
+              <p className="font-body text-xs text-muted-foreground">
                 Keep learning to unlock more awesome items!
               </p>
               <Button onClick={onBack} className="w-full font-heading">
@@ -242,122 +242,125 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/20 via-lavender/20 to-secondary/20 p-4">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between bg-white/80 rounded-3xl p-6 shadow-lg">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={onBack}>
+    <div className="h-screen bg-gradient-to-br from-primary/20 via-lavender/20 to-secondary/20 overflow-hidden">
+      <div className="h-full flex flex-col p-3">
+        {/* Header - Fixed */}
+        <div className="flex items-center justify-between bg-white/80 rounded-2xl p-3 shadow-lg mb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" onClick={onBack}>
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="font-heading text-xl font-bold text-foreground capitalize">
+              <h1 className="font-heading text-lg font-bold text-foreground capitalize">
                 {subject} Activity
               </h1>
-              <p className="font-body text-sm text-muted-foreground">
+              <p className="font-body text-xs text-muted-foreground">
                 Question {currentQuestionIndex + 1} of {questions.length}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <AvatarDisplay avatar={profile.avatar} size="small" />
-            <Badge variant="outline">
-              Score: {score}/{questions.length}
+            <Badge variant="outline" className="text-xs">
+              {score}/{questions.length}
             </Badge>
           </div>
         </div>
 
-        {/* Progress */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-body text-sm text-muted-foreground">Progress</span>
-              <span className="font-body text-sm text-muted-foreground">
+        {/* Progress Bar */}
+        <Card className="mb-3">
+          <CardContent className="p-2">
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-body text-xs text-muted-foreground">Progress</span>
+              <span className="font-body text-xs text-muted-foreground">
                 {progress.toFixed(0)}%
               </span>
             </div>
-            <Progress value={progress} className="h-3" />
+            <Progress value={progress} className="h-2" />
           </CardContent>
         </Card>
 
-        {/* Avatar Companion */}
-        <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-none">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="text-4xl">😊</div>
-              <div className="flex-1">
-                <p className="font-body text-lg text-foreground">
-                  {showFeedback 
-                    ? isCorrect 
-                      ? `"${getRandomEncouragement()} ${currentQuestion.explanation}"`
-                      : `"Don't worry! ${currentQuestion.explanation} Try again!"`
-                    : `"Take your time with this question, ${profile.name}. You've got this!"`
-                  }
-                </p>
+        {/* Main Content - Flexible */}
+        <div className="flex-1 min-h-0 space-y-3">
+          {/* Companion Message */}
+          <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-none">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-3">
+                <div className="text-2xl">😊</div>
+                <div className="flex-1">
+                  <p className="font-body text-sm text-foreground">
+                    {showFeedback 
+                      ? isCorrect 
+                        ? `"${getRandomEncouragement()} ${currentQuestion.explanation}"`
+                        : `"Don't worry! ${currentQuestion.explanation} Try again!"`
+                      : `"Take your time, ${profile.name}. You've got this!"`
+                    }
+                  </p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Question */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-heading text-xl font-semibold text-center">
-              {currentQuestion.question}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Multiple Choice Options */}
-            {currentQuestion.type === 'multiple-choice' && currentQuestion.options && (
-              <div className="grid grid-cols-2 gap-4">
-                {currentQuestion.options.map((option, index) => (
-                  <Button
-                    key={index}
-                    variant={selectedAnswer === option ? "default" : "outline"}
-                    size="lg"
-                    onClick={() => handleAnswerSelect(option)}
-                    disabled={showFeedback}
-                    className={`h-16 text-lg font-heading ${
-                      showFeedback && option === currentQuestion.correctAnswer
-                        ? 'ring-2 ring-green-500 bg-green-100'
-                        : showFeedback && selectedAnswer === option && !isCorrect
-                        ? 'ring-2 ring-red-500 bg-red-100'
-                        : ''
-                    }`}
-                  >
-                    {option}
-                  </Button>
-                ))}
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex justify-center">
-              {!showFeedback ? (
-                <Button
-                  onClick={handleSubmitAnswer}
-                  disabled={!selectedAnswer}
-                  size="lg"
-                  className="font-heading px-8"
-                >
-                  Submit Answer
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleNextQuestion}
-                  size="lg"
-                  className="font-heading px-8"
-                >
-                  {currentQuestionIndex < questions.length - 1 ? (
-                    <>Next Question</>
-                  ) : (
-                    <>Complete Activity <CheckCircle className="w-5 h-5 ml-2" /></>
-                  )}
-                </Button>
+          {/* Question Card */}
+          <Card className="flex-1 flex flex-col">
+            <CardHeader className="pb-2">
+              <CardTitle className="font-heading text-lg font-semibold text-center">
+                {currentQuestion.question}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col justify-between space-y-4">
+              {/* Multiple Choice Options */}
+              {currentQuestion.type === 'multiple-choice' && currentQuestion.options && (
+                <div className="grid grid-cols-2 gap-3 flex-1">
+                  {currentQuestion.options.map((option, index) => (
+                    <Button
+                      key={index}
+                      variant={selectedAnswer === option ? "default" : "outline"}
+                      size="lg"
+                      onClick={() => handleAnswerSelect(option)}
+                      disabled={showFeedback}
+                      className={`h-full text-base font-heading ${
+                        showFeedback && option === currentQuestion.correctAnswer
+                          ? 'ring-2 ring-green-500 bg-green-100'
+                          : showFeedback && selectedAnswer === option && !isCorrect
+                          ? 'ring-2 ring-red-500 bg-red-100'
+                          : ''
+                      }`}
+                    >
+                      {option}
+                    </Button>
+                  ))}
+                </div>
               )}
-            </div>
-          </CardContent>
-        </Card>
+
+              {/* Action Button */}
+              <div className="flex justify-center">
+                {!showFeedback ? (
+                  <Button
+                    onClick={handleSubmitAnswer}
+                    disabled={!selectedAnswer}
+                    size="lg"
+                    className="font-heading px-6"
+                  >
+                    Submit Answer
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleNextQuestion}
+                    size="lg"
+                    className="font-heading px-6"
+                  >
+                    {currentQuestionIndex < questions.length - 1 ? (
+                      <>Next Question</>
+                    ) : (
+                      <>Complete <CheckCircle className="w-4 h-4 ml-2" /></>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

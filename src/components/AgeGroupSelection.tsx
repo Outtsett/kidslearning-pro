@@ -68,39 +68,41 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${selectedGroup ? AGE_GROUPS.find(g => g.id === selectedGroup)?.colors || 'from-primary/20 via-lavender/20 to-secondary/20' : 'from-primary/20 via-lavender/20 to-secondary/20'} p-4 transition-all duration-1000`}>
-      <div className="max-w-6xl mx-auto">
-        {/* Welcome Header */}
+    <div className={`h-screen bg-gradient-to-br ${selectedGroup ? AGE_GROUPS.find(g => g.id === selectedGroup)?.colors || 'from-primary/20 via-lavender/20 to-secondary/20' : 'from-primary/20 via-lavender/20 to-secondary/20'} transition-all duration-1000 overflow-hidden`}>
+      <div className="h-full flex flex-col p-4">
+        {/* Welcome Header - Fixed Height */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          className="text-center mb-6"
         >
-          <div className="inline-block p-8 bg-white/90 rounded-3xl shadow-xl">
-            <div className="text-8xl mb-6">🧸</div>
-            <h1 className="font-heading text-4xl font-bold text-foreground mb-4">
+          <div className="inline-block p-4 bg-white/90 rounded-2xl shadow-xl">
+            <div className="text-4xl mb-2">🧸</div>
+            <h1 className="font-heading text-2xl font-bold text-foreground mb-2">
               Welcome to KidsLearning Pro!
             </h1>
-            <p className="font-body text-xl text-muted-foreground max-w-2xl mx-auto">
-              Hi there! I'm Teddy, your learning buddy. Let's find the perfect learning adventure just for you!
+            <p className="font-body text-sm text-muted-foreground">
+              Hi! I'm Teddy. Let's find your perfect learning adventure!
             </p>
           </div>
         </motion.div>
 
-        {/* Age Group Selection */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mb-8"
-        >
-          <h2 className="font-heading text-2xl font-semibold text-foreground text-center mb-8 flex items-center justify-center gap-2">
-            <Heart className="text-accent" weight="fill" />
-            Choose Your Learning Level
-            <Heart className="text-accent" weight="fill" />
-          </h2>
+        {/* Age Group Selection - Flexible Height */}
+        <div className="flex-1 min-h-0 flex flex-col">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-center mb-4"
+          >
+            <h2 className="font-heading text-lg font-semibold text-foreground flex items-center justify-center gap-2">
+              <Heart className="text-accent w-5 h-5" weight="fill" />
+              Choose Your Learning Level
+              <Heart className="text-accent w-5 h-5" weight="fill" />
+            </h2>
+          </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 min-h-0">
             {AGE_GROUPS.map((group, index) => (
               <motion.div
                 key={group.id}
@@ -109,72 +111,74 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
                 transition={{ delay: 0.1 * index }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                className="flex"
               >
                 <Card 
                   className={`cursor-pointer transition-all duration-300 hover:shadow-xl ${
                     selectedGroup === group.id 
-                      ? 'ring-4 ring-primary shadow-xl' 
+                      ? 'ring-2 ring-primary shadow-xl' 
                       : 'hover:shadow-lg'
-                  } ${group.cardColors}`}
+                  } ${group.cardColors} flex flex-col w-full`}
                   onClick={() => setSelectedGroup(group.id)}
                 >
-                  <CardHeader className="text-center pb-4">
-                    <div className="text-6xl mb-4">{group.emoji}</div>
-                    <h3 className="font-heading text-2xl font-bold text-foreground mb-2">
+                  <CardHeader className="text-center pb-2 flex-shrink-0">
+                    <div className="text-3xl mb-2">{group.emoji}</div>
+                    <h3 className="font-heading text-lg font-bold text-foreground mb-1">
                       {group.name}
                     </h3>
-                    <p className="font-body text-lg font-semibold text-primary">
+                    <p className="font-body text-sm font-semibold text-primary">
                       {group.ages}
                     </p>
                   </CardHeader>
-                  <CardContent className="text-center space-y-4">
-                    <p className="font-body text-muted-foreground">
-                      {group.description}
-                    </p>
-                    
-                    <Button
-                      variant={selectedGroup === group.id ? "default" : "outline"}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setShowDetails(showDetails === group.id ? null : group.id)
-                      }}
-                      className="w-full font-heading"
-                    >
-                      {showDetails === group.id ? 'Hide Subjects' : 'See What You\'ll Learn'}
-                    </Button>
-
-                    {showDetails === group.id && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-3 pt-4 border-t border-border"
+                  <CardContent className="text-center flex-1 flex flex-col justify-between p-3">
+                    <div className="space-y-2">
+                      <p className="font-body text-xs text-muted-foreground">
+                        {group.description}
+                      </p>
+                      
+                      <Button
+                        variant={selectedGroup === group.id ? "default" : "outline"}
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setShowDetails(showDetails === group.id ? null : group.id)
+                        }}
+                        className="w-full font-heading text-xs"
                       >
-                        {group.subjects.map((subject, idx) => (
-                          <div key={idx} className="flex items-start gap-3 text-left">
-                            <span className="text-xl">{subject.icon}</span>
-                            <div>
-                              <p className="font-heading font-semibold text-sm text-foreground">
-                                {subject.name}
-                              </p>
-                              <p className="font-body text-xs text-muted-foreground">
-                                {subject.description}
-                              </p>
+                        {showDetails === group.id ? 'Hide' : 'Preview'}
+                      </Button>
+
+                      {showDetails === group.id && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="space-y-2 pt-2 border-t border-border"
+                        >
+                          {group.subjects.slice(0, 2).map((subject, idx) => (
+                            <div key={idx} className="flex items-start gap-2 text-left">
+                              <span className="text-sm">{subject.icon}</span>
+                              <div>
+                                <p className="font-heading font-semibold text-xs text-foreground">
+                                  {subject.name}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </motion.div>
-                    )}
+                          ))}
+                          <p className="text-xs text-muted-foreground">+ {group.subjects.length - 2} more subjects</p>
+                        </motion.div>
+                      )}
+                    </div>
 
                     {selectedGroup === group.id && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="flex justify-center mt-4"
+                        className="flex justify-center mt-2"
                       >
                         <div className="flex items-center gap-1">
-                          <Star className="text-yellow-500 w-5 h-5" weight="fill" />
-                          <span className="font-heading text-sm font-semibold text-foreground">Selected!</span>
+                          <Star className="text-yellow-500 w-4 h-4" weight="fill" />
+                          <span className="font-heading text-xs font-semibold text-foreground">Selected!</span>
                         </div>
                       </motion.div>
                     )}
@@ -183,30 +187,30 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
               </motion.div>
             ))}
           </div>
-        </motion.div>
+        </div>
 
-        {/* Continue Button */}
+        {/* Continue Button - Fixed Bottom */}
         {selectedGroup && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center"
+            className="text-center mt-4 flex-shrink-0"
           >
             <Card className="inline-block bg-white/90 border-none shadow-xl">
-              <CardContent className="p-6">
-                <div className="text-center space-y-4">
-                  <div className="text-4xl">
+              <CardContent className="p-4">
+                <div className="text-center space-y-2">
+                  <div className="text-2xl">
                     {AGE_GROUPS.find(g => g.id === selectedGroup)?.emoji}
                   </div>
-                  <p className="font-body text-lg text-muted-foreground">
-                    Perfect choice! Ready to create your learning avatar?
+                  <p className="font-body text-sm text-muted-foreground">
+                    Perfect choice! Let's start learning!
                   </p>
                   <Button
                     onClick={handleContinue}
                     size="lg"
-                    className="font-heading text-lg px-8 py-3"
+                    className="font-heading text-sm px-6 py-2"
                   >
-                    Create My Avatar <Sparkles className="ml-2" weight="fill" />
+                    Start Learning <Sparkles className="ml-2 w-4 h-4" weight="fill" />
                   </Button>
                 </div>
               </CardContent>
