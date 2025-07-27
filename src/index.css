@@ -1,12 +1,6 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
 
-@layer base {
-  * {
-    border-color: var(--border);
-  }
-}
-
 :root {
   --background: oklch(0.97 0.02 85);
   --foreground: oklch(0.25 0.02 85);

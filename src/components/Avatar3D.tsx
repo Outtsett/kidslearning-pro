@@ -268,7 +268,7 @@ export function Avatar3D({
       animate={{ scale: 1, rotateY: 0 }}
       transition={{ 
         duration: 0.8, 
-        ease: "easeOutBack",
+        ease: "backOut",
         staggerChildren: 0.1
       }}
       whileHover={{ scale: 1.05 }}

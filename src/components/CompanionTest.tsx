@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Companions3D } from '@/components/Companions3D'
+import { CompanionSafe } from '@/components/CompanionSafe'
 import type { AgeGroup } from '@/App'
 
 export function CompanionTest() {
@@ -75,7 +75,7 @@ export function CompanionTest() {
             {/* 3D Companion Display */}
             <Card className="bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-dashed border-purple-200">
               <CardContent className="p-6 flex justify-center">
-                <Companions3D
+                <CompanionSafe
                   ageGroup={ageGroup}
                   name="Test User"
                   emotion={emotion}
