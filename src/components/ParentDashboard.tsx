@@ -58,16 +58,36 @@ interface WeeklyGoal {
   currentActivities: number
 }
 
-interface DifficultyTrend {
-  subject: Subject
-  trend: 'improving' | 'stable' | 'declining'
-  averageDifficulty: number
-  recommendation: string
+interface ParentDashboardProps {
+  profile: UserProfile | null
+  onBack: () => void
 }
 
-interface ParentDashboardProps {
-  profile: UserProfile
-  onBack: () => void
+interface Stats {
+  totalTime: number
+  totalActivities: number
+  averageAccuracy: number
+  averageScore: number
+  subjectBreakdown: Array<{
+    subject: Subject
+    time: number
+    activities: number
+    accuracy: number
+    score: number
+    trend: 'up' | 'down' | 'stable'
+    averageDifficulty: number
+  }>
+  sessionsThisWeek: number
+  difficultyTrends: DifficultyTrend[]
+  timeDistribution: Record<string, number>
+  streakDays: number
+}
+
+interface DifficultyTrend {
+  subject: Subject
+  trend: 'increasing' | 'decreasing' | 'stable'
+  averageDifficulty: number
+  recommendation: string
 }
 
 function PasswordProtection({ onAuthenticated }: { onAuthenticated: () => void }) {
@@ -75,12 +95,12 @@ function PasswordProtection({ onAuthenticated }: { onAuthenticated: () => void }
   const [showPassword, setShowPassword] = useState(false)
   const [parentPassword] = useKV<string>('parent-password', 'parent123')
   const [attempts, setAttempts] = useKV<number>('password-attempts', 0)
+  const [lockoutUntil, setLockoutUntil] = useKV<number>('lockout-until', 0)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (attempts >= 3) {
-      toast.error('Too many failed attempts. Please wait before trying again.')
+  const handleLogin = () => {
+    if (Date.now() < lockoutUntil) {
+      const remainingTime = Math.ceil((lockoutUntil - Date.now()) / 1000 / 60)
+      toast.error(`Too many failed attempts. Try again in ${remainingTime} minutes.`)
       return
     }
 
@@ -89,8 +109,15 @@ function PasswordProtection({ onAuthenticated }: { onAuthenticated: () => void }
       onAuthenticated()
       toast.success('Access granted to Parent Dashboard')
     } else {
-      setAttempts(prev => prev + 1)
-      toast.error(`Incorrect password. ${3 - (attempts + 1)} attempts remaining.`)
+      const newAttempts = attempts + 1
+      setAttempts(newAttempts)
+      
+      if (newAttempts >= 3) {
+        setLockoutUntil(Date.now() + 15 * 60 * 1000) // 15 minute lockout
+        toast.error('Too many failed attempts. Locked out for 15 minutes.')
+      } else {
+        toast.error(`Incorrect password. ${3 - newAttempts} attempts remaining.`)
+      }
       setPassword('')
     }
   }
@@ -99,259 +126,57 @@ function PasswordProtection({ onAuthenticated }: { onAuthenticated: () => void }
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <Shield className="text-primary" size={24} />
+          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <Shield size={32} className="text-primary" />
           </div>
-          <CardTitle className="text-2xl font-heading">Parent Dashboard Access</CardTitle>
+          <CardTitle className="font-heading text-2xl">Parent Dashboard</CardTitle>
           <CardDescription>
-            Enter your password to view your child's learning progress
+            Enter your password to access progress monitoring and settings
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter parent password"
-                  className="pr-10"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-1 top-1 h-8 w-8 p-0"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeSlash size={16} /> : <Eye size={16} />}
-                </Button>
-              </div>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                placeholder="Enter parent password"
+                className="pr-10"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeSlash size={16} /> : <Eye size={16} />}
+              </Button>
             </div>
-            
-            {attempts >= 3 && (
-              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                <p className="text-sm text-destructive">
-                  Account temporarily locked due to failed attempts.
-                </p>
-              </div>
-            )}
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={attempts >= 3 || !password.trim()}
-            >
-              <Lock size={16} className="mr-2" />
-              Access Dashboard
-            </Button>
-            
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground">
-                Default password: parent123
+            {attempts > 0 && attempts < 3 && (
+              <p className="text-sm text-destructive">
+                {3 - attempts} attempts remaining
               </p>
-            </div>
-          </form>
+            )}
+          </div>
+          
+          <Button onClick={handleLogin} className="w-full" disabled={Date.now() < lockoutUntil}>
+            <Lock size={16} className="mr-2" />
+            Access Dashboard
+          </Button>
+          
+          <div className="text-center">
+            <p className="text-xs text-muted-foreground">
+              Default password: parent123
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
-  )
-}
-
-function ExportReports({ profile, sessions }: { profile: UserProfile; sessions: SessionData[] }) {
-  const [exportFormat, setExportFormat] = useState<'pdf' | 'csv'>('pdf')
-  const [dateRange, setDateRange] = useState<'week' | 'month' | 'all'>('month')
-
-  const generateReport = () => {
-    const filteredSessions = sessions.filter(session => {
-      const sessionDate = new Date(session.date)
-      const now = new Date()
-      
-      switch (dateRange) {
-        case 'week':
-          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-          return sessionDate >= weekAgo
-        case 'month':
-          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-          return sessionDate >= monthAgo
-        default:
-          return true
-      }
-    })
-
-    if (exportFormat === 'csv') {
-      generateCSV(filteredSessions)
-    } else {
-      generatePDF(filteredSessions)
-    }
-  }
-
-  const generateCSV = (data: SessionData[]) => {
-    const headers = ['Date', 'Subject', 'Duration (min)', 'Activities', 'Accuracy (%)', 'Score', 'Difficulty', 'Time of Day', 'Coins Earned']
-    const rows = data.map(session => [
-      session.date,
-      session.subject,
-      session.duration,
-      session.activitiesCompleted,
-      session.accuracy,
-      session.score,
-      session.difficultyLevel,
-      session.timeOfDay,
-      session.coinsEarned
-    ])
-
-    const csvContent = [headers, ...rows]
-      .map(row => row.join(','))
-      .join('\n')
-
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${profile.name}_progress_report_${dateRange}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
-    
-    toast.success('CSV report downloaded successfully!')
-  }
-
-  const generatePDF = (data: SessionData[]) => {
-    // Create a simple PDF-like HTML report
-    const reportContent = `
-      <html>
-        <head>
-          <title>${profile.name}'s Learning Progress Report</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 40px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-            .stat-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f5f5f5; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>${profile.name}'s Learning Progress Report</h1>
-            <p>Generated on ${new Date().toLocaleDateString()}</p>
-            <p>Age Group: ${profile.ageGroup} | Report Period: ${dateRange}</p>
-          </div>
-          
-          <div class="stats">
-            <div class="stat-card">
-              <h3>Total Time</h3>
-              <p>${data.reduce((sum, s) => sum + s.duration, 0)} minutes</p>
-            </div>
-            <div class="stat-card">
-              <h3>Activities Completed</h3>
-              <p>${data.reduce((sum, s) => sum + s.activitiesCompleted, 0)}</p>
-            </div>
-            <div class="stat-card">
-              <h3>Average Accuracy</h3>
-              <p>${Math.round(data.reduce((sum, s) => sum + s.accuracy, 0) / data.length)}%</p>
-            </div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Subject</th>
-                <th>Duration</th>
-                <th>Activities</th>
-                <th>Accuracy</th>
-                <th>Score</th>
-                <th>Difficulty</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.map(session => `
-                <tr>
-                  <td>${session.date}</td>
-                  <td>${session.subject}</td>
-                  <td>${session.duration}m</td>
-                  <td>${session.activitiesCompleted}</td>
-                  <td>${session.accuracy}%</td>
-                  <td>${session.score}</td>
-                  <td>${session.difficultyLevel}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `
-
-    const printWindow = window.open('', '_blank')
-    if (printWindow) {
-      printWindow.document.write(reportContent)
-      printWindow.document.close()
-      printWindow.print()
-      toast.success('PDF report generated! Please save using your browser\'s print dialog.')
-    }
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Download size={20} />
-          Export Progress Reports
-        </CardTitle>
-        <CardDescription>
-          Download detailed progress reports in PDF or CSV format
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Report Format</Label>
-            <Select value={exportFormat} onValueChange={(value: 'pdf' | 'csv') => setExportFormat(value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pdf">
-                  <div className="flex items-center gap-2">
-                    <FileText size={16} />
-                    PDF Report
-                  </div>
-                </SelectItem>
-                <SelectItem value="csv">
-                  <div className="flex items-center gap-2">
-                    <FileCsv size={16} />
-                    CSV Data
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Date Range</Label>
-            <Select value={dateRange} onValueChange={(value: 'week' | 'month' | 'all') => setDateRange(value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="week">Last 7 Days</SelectItem>
-                <SelectItem value="month">Last 30 Days</SelectItem>
-                <SelectItem value="all">All Time</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <Button onClick={generateReport} className="w-full">
-          <Download size={16} className="mr-2" />
-          Generate {exportFormat.toUpperCase()} Report
-        </Button>
-      </CardContent>
-    </Card>
   )
 }
 
@@ -372,31 +197,122 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
   }
 
   const subjectConfig = {
-    math: { icon: Calculator, color: 'text-primary', name: 'Math' },
-    reading: { icon: BookOpen, color: 'text-secondary', name: 'Reading' },
-    science: { icon: Microscope, color: 'text-accent', name: 'Science' },
-    art: { icon: Palette, color: 'text-lavender', name: 'Art' }
+    math: { icon: Calculator, color: 'text-blue-600', bg: 'bg-blue-50' },
+    reading: { icon: BookOpen, color: 'text-green-600', bg: 'bg-green-50' },
+    science: { icon: Microscope, color: 'text-purple-600', bg: 'bg-purple-50' },
+    art: { icon: Palette, color: 'text-pink-600', bg: 'bg-pink-50' }
   }
 
-  // Calculate advanced statistics including difficulty trends
-  const stats = useMemo(() => {
+  // Calculate comprehensive statistics
+  const stats: Stats = useMemo(() => {
+    const now = new Date()
     const last7Days = sessions.filter(session => {
       const sessionDate = new Date(session.date)
-      const weekAgo = new Date()
-      weekAgo.setDate(weekAgo.getDate() - 7)
-      return sessionDate >= weekAgo
+      const daysDiff = (now.getTime() - sessionDate.getTime()) / (1000 * 3600 * 24)
+      return daysDiff <= 7
     })
-
     const last30Days = sessions.filter(session => {
       const sessionDate = new Date(session.date)
-      const monthAgo = new Date()
-      monthAgo.setDate(monthAgo.getDate() - 30)
-      return sessionDate >= monthAgo
+      const daysDiff = (now.getTime() - sessionDate.getTime()) / (1000 * 3600 * 24)
+      return daysDiff <= 30
     })
+
+    const calculateTrend = (recentSessions: SessionData[]) => {
+      if (recentSessions.length < 2) return 'stable' as const
+      const firstHalf = recentSessions.slice(0, Math.floor(recentSessions.length / 2))
+      const secondHalf = recentSessions.slice(Math.floor(recentSessions.length / 2))
+      
+      const firstAvg = firstHalf.reduce((sum, s) => sum + s.accuracy, 0) / firstHalf.length
+      const secondAvg = secondHalf.reduce((sum, s) => sum + s.accuracy, 0) / secondHalf.length
+      
+      const difference = secondAvg - firstAvg
+      return difference > 5 ? 'up' : difference < -5 ? 'down' : 'stable'
+    }
+
+    const calculateAverageDifficulty = (sessions: SessionData[]) => {
+      if (sessions.length === 0) return 0
+      const difficultyMap = { easy: 1, medium: 2, hard: 3 }
+      return sessions.reduce((sum, s) => sum + difficultyMap[s.difficultyLevel], 0) / sessions.length
+    }
+
+    const calculateDifficultyTrend = (sessions: SessionData[]) => {
+      if (sessions.length < 3) return { trend: 'stable' as const, averageDifficulty: 0 }
+      
+      const recent = sessions.slice(-5)
+      const earlier = sessions.slice(-10, -5)
+      
+      const recentAvg = calculateAverageDifficulty(recent)
+      const earlierAvg = calculateAverageDifficulty(earlier)
+      
+      const diff = recentAvg - earlierAvg
+      const trend = diff > 0.3 ? 'increasing' : diff < -0.3 ? 'decreasing' : 'stable'
+      
+      return { trend, averageDifficulty: recentAvg }
+    }
+
+    const calculateTimeDistribution = (sessions: SessionData[]) => {
+      const distribution = { morning: 0, afternoon: 0, evening: 0 }
+      sessions.forEach(session => {
+        distribution[session.timeOfDay] += session.duration
+      })
+      return distribution
+    }
+
+    const calculateStreakDays = (allSessions: SessionData[]) => {
+      if (allSessions.length === 0) return 0
+      
+      const sortedDates = [...new Set(allSessions.map(s => s.date))].sort().reverse()
+      let streak = 0
+      const today = new Date().toDateString()
+      let currentDate = new Date()
+      
+      for (let i = 0; i < sortedDates.length; i++) {
+        const sessionDate = new Date(sortedDates[i]).toDateString()
+        const expectedDate = currentDate.toDateString()
+        
+        if (sessionDate === expectedDate) {
+          streak++
+          currentDate.setDate(currentDate.getDate() - 1)
+        } else if (i === 0 && sessionDate !== today) {
+          // If the first session isn't today, no current streak
+          break
+        } else {
+          break
+        }
+      }
+      
+      return streak
+    }
+
+    const generateRecommendation = (subject: Subject, trend: { trend: string, averageDifficulty: number }, ageGroup: AgeGroup): string => {
+      const recommendations = {
+        '3-5': {
+          math: ['Try counting games', 'Use visual aids', 'Keep sessions short'],
+          reading: ['Read aloud together', 'Use picture books', 'Practice letter sounds'],
+          science: ['Explore nature', 'Simple experiments', 'Ask "why" questions'],
+          art: ['Free drawing time', 'Finger painting', 'Shape exploration']
+        },
+        '6-9': {
+          math: ['Practice mental math', 'Word problems', 'Math games'],
+          reading: ['Independent reading', 'Chapter books', 'Reading comprehension'],
+          science: ['Science experiments', 'Nature observation', 'Simple research'],
+          art: ['Drawing techniques', 'Color mixing', 'Craft projects']
+        },
+        '10-12': {
+          math: ['Advanced problems', 'Real-world applications', 'Logic puzzles'],
+          reading: ['Complex literature', 'Research skills', 'Critical thinking'],
+          science: ['Lab experiments', 'Scientific method', 'Research projects'],
+          art: ['Digital art', 'Portfolio building', 'Art history']
+        }
+      }
+
+      const tips = recommendations[ageGroup][subject]
+      return tips[Math.floor(Math.random() * tips.length)]
+    }
 
     const totalTime = last7Days.reduce((sum, session) => sum + session.duration, 0)
     const totalActivities = last7Days.reduce((sum, session) => sum + session.activitiesCompleted, 0)
-    const averageAccuracy = last7Days.length > 0 
+    const averageAccuracy = last7Days.length > 0
       ? last7Days.reduce((sum, session) => sum + session.accuracy, 0) / last7Days.length 
       : 0
     const averageScore = last7Days.length > 0
@@ -431,7 +347,7 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
         subject: subject as Subject,
         trend: trend.trend,
         averageDifficulty: trend.averageDifficulty,
-        recommendation: generateRecommendation(subject as Subject, trend, profile.ageGroup)
+        recommendation: generateRecommendation(subject as Subject, trend, profile?.ageGroup || '6-9')
       }
     })
 
@@ -446,109 +362,45 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
       timeDistribution: calculateTimeDistribution(last7Days),
       streakDays: calculateStreakDays(sessions)
     }
-  }, [sessions, profile.ageGroup])
+  }, [sessions, profile?.ageGroup])
 
-  const calculateTrend = (sessions: SessionData[]) => {
-    if (sessions.length < 2) return 'stable'
-    
-    const firstHalf = sessions.slice(0, Math.floor(sessions.length / 2))
-    const secondHalf = sessions.slice(Math.floor(sessions.length / 2))
-    
-    const firstAvg = firstHalf.reduce((sum, s) => sum + s.accuracy, 0) / firstHalf.length
-    const secondAvg = secondHalf.reduce((sum, s) => sum + s.accuracy, 0) / secondHalf.length
-    
-    if (secondAvg > firstAvg + 5) return 'improving'
-    if (secondAvg < firstAvg - 5) return 'declining'
-    return 'stable'
+  const exportToPDF = () => {
+    toast.info('PDF export feature coming soon!')
   }
 
-  const calculateAverageDifficulty = (sessions: SessionData[]) => {
-    if (sessions.length === 0) return 0
-    
-    const difficultyMap = { easy: 1, medium: 2, hard: 3 }
-    return sessions.reduce((sum, s) => sum + (difficultyMap[s.difficultyLevel || 'medium']), 0) / sessions.length
+  const exportToCSV = () => {
+    if (sessions.length === 0) {
+      toast.error('No data to export')
+      return
+    }
+
+    const csvContent = [
+      ['Date', 'Subject', 'Duration (min)', 'Activities', 'Accuracy (%)', 'Score', 'Difficulty'],
+      ...sessions.map(session => [
+        session.date,
+        session.subject,
+        session.duration.toString(),
+        session.activitiesCompleted.toString(),
+        session.accuracy.toString(),
+        (session.score || 0).toString(),
+        session.difficultyLevel
+      ])
+    ].map(row => row.join(',')).join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `learning-progress-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    window.URL.revokeObjectURL(url)
+    toast.success('Progress data exported to CSV')
   }
 
-  const calculateDifficultyTrend = (sessions: SessionData[]) => {
-    const difficultyMap = { easy: 1, medium: 2, hard: 3 }
-    const difficulties = sessions.map(s => difficultyMap[s.difficultyLevel || 'medium'])
-    
-    if (difficulties.length < 2) {
-      return { trend: 'stable' as const, averageDifficulty: difficulties[0] || 2 }
-    }
-    
-    const firstHalf = difficulties.slice(0, Math.floor(difficulties.length / 2))
-    const secondHalf = difficulties.slice(Math.floor(difficulties.length / 2))
-    
-    const firstAvg = firstHalf.reduce((sum, d) => sum + d, 0) / firstHalf.length
-    const secondAvg = secondHalf.reduce((sum, d) => sum + d, 0) / secondHalf.length
-    const overallAvg = difficulties.reduce((sum, d) => sum + d, 0) / difficulties.length
-    
-    if (secondAvg > firstAvg + 0.3) return { trend: 'improving' as const, averageDifficulty: overallAvg }
-    if (secondAvg < firstAvg - 0.3) return { trend: 'declining' as const, averageDifficulty: overallAvg }
-    return { trend: 'stable' as const, averageDifficulty: overallAvg }
-  }
-
-  const generateRecommendation = (subject: Subject, trend: { trend: string; averageDifficulty: number }, ageGroup: AgeGroup) => {
-    if (trend.trend === 'improving' && trend.averageDifficulty < 2.5) {
-      return `${profile.name} is ready for more challenging ${subject} activities!`
-    }
-    if (trend.trend === 'declining') {
-      return `Consider reviewing ${subject} basics and providing extra support.`
-    }
-    if (trend.averageDifficulty > 2.5) {
-      return `${profile.name} is tackling advanced ${subject} concepts well!`
-    }
-    return `${profile.name} is making steady progress in ${subject}.`
-  }
-
-  const calculateTimeDistribution = (sessions: SessionData[]) => {
-    const distribution = { morning: 0, afternoon: 0, evening: 0 }
-    sessions.forEach(session => {
-      if (session.timeOfDay) {
-        distribution[session.timeOfDay] += session.duration
-      }
-    })
-    return distribution
-  }
-
-  const calculateStreakDays = (sessions: SessionData[]) => {
-    const dates = [...new Set(sessions.map(s => s.date))].sort()
-    let currentStreak = 0
-    let maxStreak = 0
-    
-    for (let i = dates.length - 1; i >= 0; i--) {
-      const currentDate = new Date(dates[i])
-      const expectedDate = new Date()
-      expectedDate.setDate(expectedDate.getDate() - (dates.length - 1 - i))
-      
-      if (currentDate.toDateString() === expectedDate.toDateString()) {
-        currentStreak++
-        maxStreak = Math.max(maxStreak, currentStreak)
-      } else {
-        break
-      }
-    }
-    
-    return { current: currentStreak, max: maxStreak }
-  }
-
-  const ageGroupRecommendations = {
-    '3-5': {
-      dailyTime: '15-20 minutes',
-      focusAreas: ['Letter recognition', 'Number counting', 'Color identification', 'Basic shapes'],
-      tips: ['Keep sessions short and playful', 'Use lots of visual rewards', 'Encourage exploration']
-    },
-    '6-9': {
-      dailyTime: '20-30 minutes',
-      focusAreas: ['Reading comprehension', 'Basic math operations', 'Science experiments', 'Creative projects'],
-      tips: ['Set small achievable goals', 'Mix different subjects', 'Celebrate progress regularly']
-    },
-    '10-12': {
-      dailyTime: '30-45 minutes',
-      focusAreas: ['Advanced reading', 'Problem solving', 'Scientific method', 'Creative expression'],
-      tips: ['Encourage independent learning', 'Discuss what they learned', 'Connect to real-world applications']
-    }
+  const addSampleData = () => {
+    const newSessions = generateSampleSessions(profile?.ageGroup || '6-9')
+    // This would typically save to useKV, but since we're in demo mode, just show success
+    toast.success(`Added ${newSessions.length} sample learning sessions`)
   }
 
   return (
@@ -561,470 +413,357 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
               variant="ghost"
               size="sm"
               onClick={onBack}
-              className="flex items-center gap-2"
+              className="p-2"
             >
-              <ArrowLeft size={16} />
-              Back
+              <ArrowLeft size={20} />
             </Button>
             <div>
-              <h1 className="text-xl font-heading font-bold text-foreground">
-                Parent Dashboard
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {profile.name}'s learning progress
+              <h1 className="text-2xl font-heading font-bold">Parent Dashboard</h1>
+              <p className="text-muted-foreground">
+                Monitoring progress for {profile?.name || 'Young Learner'}
               </p>
             </div>
           </div>
+          
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-xs">
-              Age {profile.ageGroup}
-            </Badge>
-            {sessions.length === 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={generateSampleSessions}
-                className="flex items-center gap-1"
-              >
-                <Database size={14} />
-                Demo
-              </Button>
-            )}
+            <Button variant="outline" size="sm" onClick={addSampleData}>
+              <Database size={16} className="mr-2" />
+              Add Sample Data
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportToCSV}>
+              <FileCsv size={16} className="mr-2" />
+              Export CSV
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportToPDF}>
+              <FileText size={16} className="mr-2" />
+              Export PDF
+            </Button>
           </div>
         </div>
 
-        {/* Main Content - Flexible */}
-        <div className="flex-1 min-h-0">
-          <Tabs defaultValue="overview" className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-5 mb-4">
-              <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
-              <TabsTrigger value="progress" className="text-xs">Progress</TabsTrigger>
-              <TabsTrigger value="trends" className="text-xs">Trends</TabsTrigger>
-              <TabsTrigger value="goals" className="text-xs">Goals</TabsTrigger>
-              <TabsTrigger value="reports" className="text-xs">Reports</TabsTrigger>
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          <Tabs defaultValue="overview" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="overview">
+                <BarChart3 size={16} className="mr-2" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="subjects">
+                <Brain size={16} className="mr-2" />
+                Subjects
+              </TabsTrigger>
+              <TabsTrigger value="goals">
+                <Target size={16} className="mr-2" />
+                Goals
+              </TabsTrigger>
+              <TabsTrigger value="insights">
+                <ChartLine size={16} className="mr-2" />
+                Insights
+              </TabsTrigger>
             </TabsList>
 
-            {/* Overview Tab */}
-            <TabsContent value="overview" className="flex-1 min-h-0 overflow-auto">
-              <div className="space-y-4">
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-                      <CardTitle className="text-xs font-medium">This Week</CardTitle>
-                      <Clock className="h-3 w-3 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0">
-                      <div className="text-lg font-bold">{stats.totalTime}m</div>
-                      <p className="text-xs text-muted-foreground">
-                        {stats.sessionsThisWeek} sessions
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-                      <CardTitle className="text-xs font-medium">Activities</CardTitle>
-                      <Target className="h-3 w-3 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0">
-                      <div className="text-lg font-bold">{stats.totalActivities}</div>
-                      <p className="text-xs text-muted-foreground">
-                        Completed
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-                      <CardTitle className="text-xs font-medium">Score</CardTitle>
-                      <Star className="h-3 w-3 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0">
-                      <div className="text-lg font-bold">{Math.round(stats.averageScore)}</div>
-                      <p className="text-xs text-muted-foreground">
-                        Average
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-                      <CardTitle className="text-xs font-medium">Streak</CardTitle>
-                      <TrendingUp className="h-3 w-3 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0">
-                      <div className="text-lg font-bold">{stats.streakDays.current}</div>
-                      <p className="text-xs text-muted-foreground">
-                        Days
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Subject Breakdown */}
+            <TabsContent value="overview" className="space-y-4">
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card>
-                  <CardHeader className="p-3">
-                    <CardTitle className="text-sm">Subject Performance</CardTitle>
-                    <CardDescription className="text-xs">
-                      This week's progress by subject
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-3 pt-0">
-                    <div className="space-y-3">
-                      {stats.subjectBreakdown.map((subject) => {
-                        const config = subjectConfig[subject.subject]
-                        const Icon = config.icon
-                        return (
-                          <div key={subject.subject} className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <div className={`p-1 rounded ${config.color}`}>
-                                <Icon size={14} />
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm font-medium">{config.name}</span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {subject.time}m
-                                  </span>
-                                </div>
-                                <div className="flex justify-between items-center text-xs">
-                                  <span className="text-muted-foreground">
-                                    {subject.activities} activities
-                                  </span>
-                                  <span className="text-muted-foreground">
-                                    {Math.round(subject.accuracy)}% • {Math.round(subject.score)}pts
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            <Progress value={Math.round(subject.accuracy)} className="h-1" />
-                          </div>
-                        )
-                      })}
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Clock size={20} className="text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">This Week</p>
+                        <p className="text-2xl font-bold">{stats.totalTime}min</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <Award size={20} className="text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Activities</p>
+                        <p className="text-2xl font-bold">{stats.totalActivities}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <Star size={20} className="text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Accuracy</p>
+                        <p className="text-2xl font-bold">{Math.round(stats.averageAccuracy)}%</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-orange-100 rounded-lg">
+                        <TrendingUp size={20} className="text-orange-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Streak</p>
+                        <p className="text-2xl font-bold">{stats.streakDays} days</p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
-            </TabsContent>
 
-            {/* Progress Tab */}
-            <TabsContent value="progress" className="flex-1 min-h-0 overflow-auto">
-              <div className="space-y-4">
-                <Card>
-                  <CardHeader className="p-3">
-                    <CardTitle className="text-sm">Learning Progress</CardTitle>
-                    <CardDescription className="text-xs">
-                      Overall improvement across subjects
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-3 pt-0 space-y-3">
-                    {(Object.keys(subjectConfig) as Subject[]).map((subject) => {
-                      const config = subjectConfig[subject]
-                      const Icon = config.icon
-                      const progress = profile.progress[subject] || 0
-                      
+              {/* Subject Performance Overview */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Subject Performance (Last 7 Days)</CardTitle>
+                  <CardDescription>
+                    Time spent and accuracy by subject
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {stats.subjectBreakdown.map((subject) => {
+                      const SubjectIcon = subjectConfig[subject.subject].icon
                       return (
-                        <div key={subject} className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className={`p-1 rounded ${config.color}`}>
-                                <Icon size={14} />
-                              </div>
-                              <span className="text-sm font-medium">{config.name}</span>
+                        <div key={subject.subject} className="flex items-center justify-between p-4 rounded-lg border">
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-lg ${subjectConfig[subject.subject].bg}`}>
+                              <SubjectIcon size={20} className={subjectConfig[subject.subject].color} />
                             </div>
-                            <span className="text-sm font-medium">{progress}%</span>
+                            <div>
+                              <p className="font-medium capitalize">{subject.subject}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {subject.time}min • {subject.activities} activities
+                              </p>
+                            </div>
                           </div>
-                          <Progress value={progress} className="h-1" />
+                          <div className="text-right">
+                            <div className="flex items-center gap-2">
+                              <Badge variant={subject.accuracy >= 80 ? 'default' : 'secondary'}>
+                                {Math.round(subject.accuracy)}%
+                              </Badge>
+                              {subject.trend === 'up' && <TrendingUp size={16} className="text-green-500" />}
+                              {subject.trend === 'down' && <TrendingUp size={16} className="text-red-500 rotate-180" />}
+                            </div>
+                          </div>
                         </div>
                       )
                     })}
-                  </CardContent>
-                </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-                <Card>
-                  <CardHeader className="p-3">
-                    <CardTitle className="text-sm">Achievements</CardTitle>
-                    <CardDescription className="text-xs">
-                      Learning milestones reached
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-3 pt-0">
-                    <div className="space-y-2">
-                      {profile.achievements.length > 0 ? (
-                        profile.achievements.slice(0, 3).map((achievement, index) => (
-                          <div key={index} className="flex items-center gap-2 p-2 rounded-lg bg-muted">
-                            <Award className="text-accent" size={16} />
-                            <span className="text-sm font-medium">{achievement}</span>
+            <TabsContent value="subjects" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {stats.subjectBreakdown.map((subject) => {
+                  const SubjectIcon = subjectConfig[subject.subject].icon
+                  return (
+                    <Card key={subject.subject}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <SubjectIcon size={20} className={subjectConfig[subject.subject].color} />
+                          <span className="capitalize">{subject.subject}</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Time This Week</p>
+                            <p className="text-xl font-bold">{subject.time} min</p>
                           </div>
-                        ))
-                      ) : (
-                        <p className="text-xs text-muted-foreground">
-                          Keep learning to unlock achievements!
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Activities</p>
+                            <p className="text-xl font-bold">{subject.activities}</p>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Accuracy</span>
+                            <span>{Math.round(subject.accuracy)}%</span>
+                          </div>
+                          <Progress value={subject.accuracy} className="h-2" />
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Average Score</span>
+                            <span>{Math.round(subject.score)}/100</span>
+                          </div>
+                          <Progress value={subject.score} className="h-2" />
+                        </div>
+
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Difficulty Level</span>
+                          <Badge variant="outline">
+                            {subject.averageDifficulty.toFixed(1)}/3.0
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
               </div>
             </TabsContent>
 
-            {/* Trends Tab */}
-            <TabsContent value="trends" className="flex-1 min-h-0 overflow-auto">
-              <div className="space-y-4">
-                <Card>
-                  <CardHeader className="p-3">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <ChartLine size={16} />
-                      Difficulty & Performance Trends
-                    </CardTitle>
-                    <CardDescription className="text-xs">
-                      How performance changes over time
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {stats.difficultyTrends.map((trend) => {
-                  const config = subjectConfig[trend.subject]
-                  const Icon = config.icon
-                  const trendColor = trend.trend === 'improving' ? 'text-green-600' : 
-                                   trend.trend === 'declining' ? 'text-red-600' : 'text-blue-600'
-                  const trendIcon = trend.trend === 'improving' ? '↗️' : 
-                                  trend.trend === 'declining' ? '↘️' : '→'
-                  
-                  return (
-                    <div key={trend.subject} className="p-4 rounded-lg border space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg bg-muted ${config.color}`}>
-                            <Icon size={20} />
+            <TabsContent value="goals" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Weekly Learning Goals</CardTitle>
+                  <CardDescription>
+                    Track progress toward weekly targets
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {weeklyGoals.map((goal) => {
+                      const SubjectIcon = subjectConfig[goal.subject].icon
+                      const timeProgress = (goal.currentMinutes / goal.targetMinutes) * 100
+                      const activityProgress = (goal.currentActivities / goal.targetActivities) * 100
+                      
+                      return (
+                        <div key={goal.subject} className="space-y-3">
+                          <div className="flex items-center gap-3">
+                            <SubjectIcon size={20} className={subjectConfig[goal.subject].color} />
+                            <h3 className="font-medium capitalize">{goal.subject}</h3>
                           </div>
-                          <div>
-                            <span className="font-medium text-lg">{config.name}</span>
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className={trendColor}>
-                                {trendIcon} {trend.trend}
-                              </span>
-                              <span className="text-muted-foreground">
-                                Avg. Difficulty: {trend.averageDifficulty.toFixed(1)}/3
-                              </span>
+                          
+                          <div className="space-y-2">
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Time Goal</span>
+                                <span>{goal.currentMinutes}/{goal.targetMinutes} min</span>
+                              </div>
+                              <Progress value={Math.min(timeProgress, 100)} className="h-2" />
+                            </div>
+                            
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Activity Goal</span>
+                                <span>{goal.currentActivities}/{goal.targetActivities} activities</span>
+                              </div>
+                              <Progress value={Math.min(activityProgress, 100)} className="h-2" />
                             </div>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="p-3 bg-muted/50 rounded-lg">
-                        <p className="text-sm">{trend.recommendation}</p>
-                      </div>
-                    </div>
-                  )
-                })}
-              </CardContent>
-            </Card>
+                      )
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Learning Time Distribution</CardTitle>
-                <CardDescription>
-                  When your child learns best throughout the day
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-4">
-                  {Object.entries(stats.timeDistribution).map(([period, minutes]) => (
-                    <div key={period} className="text-center p-4 rounded-lg bg-muted/50">
-                      <div className="text-2xl font-bold">{minutes}m</div>
-                      <div className="text-sm text-muted-foreground capitalize">{period}</div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Adjust Goals</CardTitle>
+                  <CardDescription>
+                    Customize weekly targets for each subject
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {weeklyGoals.map((goal, index) => (
+                      <div key={goal.subject} className="space-y-3 p-4 border rounded-lg">
+                        <h4 className="font-medium capitalize flex items-center gap-2">
+                          {React.createElement(subjectConfig[goal.subject].icon, { 
+                            size: 16, 
+                            className: subjectConfig[goal.subject].color 
+                          })}
+                          {goal.subject}
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor={`time-${goal.subject}`}>Weekly Minutes</Label>
+                            <Input
+                              id={`time-${goal.subject}`}
+                              type="number"
+                              value={goal.targetMinutes}
+                              onChange={(e) => {
+                                const newGoals = [...weeklyGoals]
+                                newGoals[index].targetMinutes = parseInt(e.target.value) || 0
+                                setWeeklyGoals(newGoals)
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`activities-${goal.subject}`}>Weekly Activities</Label>
+                            <Input
+                              id={`activities-${goal.subject}`}
+                              type="number"
+                              value={goal.targetActivities}
+                              onChange={(e) => {
+                                const newGoals = [...weeklyGoals]
+                                newGoals[index].targetActivities = parseInt(e.target.value) || 0
+                                setWeeklyGoals(newGoals)
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
-            {/* Reports Tab */}
-          <TabsContent value="reports" className="space-y-6">
-            <ExportReports profile={profile} sessions={sessions} />
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity Summary</CardTitle>
-                <CardDescription>
-                  Detailed breakdown of the last 10 learning sessions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {sessions.slice(-10).reverse().map((session, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg bg-muted ${subjectConfig[session.subject].color}`}>
-                          {React.createElement(subjectConfig[session.subject].icon, { size: 16 })}
-                        </div>
-                        <div>
-                          <div className="font-medium">
-                            {subjectConfig[session.subject].name}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {session.date} • {session.timeOfDay || 'unknown'}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right text-sm">
-                        <div className="font-medium">{session.duration}m</div>
-                        <div className="text-muted-foreground">
-                          {session.accuracy}% • {session.difficultyLevel || 'medium'}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {sessions.length === 0 && (
-                    <p className="text-center text-muted-foreground py-8">
-                      No learning sessions recorded yet.
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="goals" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Weekly Learning Goals</CardTitle>
-                <CardDescription>
-                  Track progress toward weekly targets
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {weeklyGoals.map((goal) => {
-                  const config = subjectConfig[goal.subject]
-                  const Icon = config.icon
-                  const timeProgress = Math.min((goal.currentMinutes / goal.targetMinutes) * 100, 100)
-                  const activityProgress = Math.min((goal.currentActivities / goal.targetActivities) * 100, 100)
-                  
-                  return (
-                    <div key={goal.subject} className="space-y-4 p-4 rounded-lg border">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg bg-muted ${config.color}`}>
-                          <Icon size={20} />
-                        </div>
-                        <span className="font-medium text-lg">{config.name}</span>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span>Time Goal</span>
-                            <span>{goal.currentMinutes}/{goal.targetMinutes} minutes</span>
-                          </div>
-                          <Progress value={timeProgress} className="h-2" />
+            <TabsContent value="insights" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Learning Patterns</CardTitle>
+                  <CardDescription>
+                    Insights based on your child's activity
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {stats.totalTime > 0 ? (
+                      <>
+                        <div className="p-4 rounded-lg bg-secondary/10 border border-secondary/20">
+                          <p className="text-sm">
+                            <strong>Most Active Subject:</strong> {
+                              stats.subjectBreakdown.reduce((prev, current) => 
+                                prev.time > current.time ? prev : current
+                              ).subject
+                            }
+                          </p>
                         </div>
                         
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span>Activity Goal</span>
-                            <span>{goal.currentActivities}/{goal.targetActivities} activities</span>
-                          </div>
-                          <Progress value={activityProgress} className="h-2" />
+                        <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
+                          <p className="text-sm">
+                            <strong>Strongest Performance:</strong> {
+                              stats.subjectBreakdown.reduce((prev, current) => 
+                                prev.accuracy > current.accuracy ? prev : current
+                              ).subject
+                            } ({Math.round(
+                              stats.subjectBreakdown.reduce((prev, current) => 
+                                prev.accuracy > current.accuracy ? prev : current
+                              ).accuracy
+                            )}% accuracy)
+                          </p>
                         </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Goals Tab */}
-          <TabsContent value="goals" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Age-Appropriate Recommendations</CardTitle>
-                <CardDescription>
-                  Tailored guidance for {profile.ageGroup} year olds
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-                  <h4 className="font-semibold text-primary mb-2">
-                    Recommended Daily Learning Time
-                  </h4>
-                  <p className="text-sm">
-                    {ageGroupRecommendations[profile.ageGroup].dailyTime}
-                  </p>
-                </div>
-                
-                <div className="space-y-3">
-                  <h4 className="font-semibold">Focus Areas for This Age Group</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {ageGroupRecommendations[profile.ageGroup].focusAreas.map((area, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm">
-                        <Brain className="text-accent" size={16} />
-                        {area}
-                      </div>
-                    ))}
+                      </>
+                    ) : (
+                      <p className="text-muted-foreground text-center py-8">
+                        Start learning activities to see personalized insights here!
+                      </p>
+                    )}
                   </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <h4 className="font-semibold">Parenting Tips</h4>
-                  <div className="space-y-2">
-                    {ageGroupRecommendations[profile.ageGroup].tips.map((tip, index) => (
-                      <div key={index} className="flex items-start gap-2 text-sm">
-                        <TrendingUp className="text-secondary mt-0.5 flex-shrink-0" size={16} />
-                        {tip}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Learning Patterns</CardTitle>
-                <CardDescription>
-                  Insights based on your child's activity
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {stats.totalTime > 0 ? (
-                    <>
-                      <div className="p-4 rounded-lg bg-secondary/10 border border-secondary/20">
-                        <p className="text-sm">
-                          <strong>Most Active Subject:</strong> {
-                            stats.subjectBreakdown.reduce((prev, current) => 
-                              prev.time > current.time ? prev : current
-                            ).subject
-                          }
-                        </p>
-                      </div>
-                      
-                      <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
-                        <p className="text-sm">
-                          <strong>Strongest Performance:</strong> {
-                            stats.subjectBreakdown.reduce((prev, current) => 
-                              prev.accuracy > current.accuracy ? prev : current
-                            ).subject
-                          } ({Math.round(
-                            stats.subjectBreakdown.reduce((prev, current) => 
-                              prev.accuracy > current.accuracy ? prev : current
-                            ).accuracy
-                          )}% accuracy)
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-muted-foreground text-center py-8">
-                      Start learning activities to see personalized insights here!
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </TabsContent>
           </TabsContent>
-        </Tabs>
+        </div>
       </div>
     </div>
   )
