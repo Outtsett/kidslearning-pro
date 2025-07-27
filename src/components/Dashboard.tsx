@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Calculator, Flask, Book, Palette, Coins, Settings, Star, ArrowLeft } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { CustomizationStore } from '@/components/CustomizationStore'
+import { CompanionMessage } from '@/components/Companions'
 import type { UserProfile, Subject } from '@/App'
 
 interface DashboardProps {
@@ -80,9 +81,7 @@ const AGE_GROUP_THEMES = {
         description: '🎨 Colors and creative fun!'
       }
     ],
-    background: 'from-pink-300/20 via-purple-300/20 to-yellow-300/20',
-    companionMessage: (name: string) => `"Hi ${name}! Let's play and learn together! What fun activity should we try today?"`,
-    companionEmoji: '🌟'
+    background: 'from-pink-300/20 via-purple-300/20 to-yellow-300/20'
   },
   '6-9': {
     subjects: [
@@ -115,9 +114,7 @@ const AGE_GROUP_THEMES = {
         description: '🖌️ Digital art and crafts!'
       }
     ],
-    background: 'from-blue-300/20 via-teal-300/20 to-green-300/20',
-    companionMessage: (name: string) => `"Hey ${name}! Ready for some awesome learning adventures? Pick a subject and let's explore together!"`,
-    companionEmoji: '🚀'
+    background: 'from-blue-300/20 via-teal-300/20 to-green-300/20'
   },
   '10-12': {
     subjects: [
@@ -150,9 +147,7 @@ const AGE_GROUP_THEMES = {
         description: '🎭 Animation and design!'
       }
     ],
-    background: 'from-slate-300/20 via-violet-300/20 to-emerald-300/20',
-    companionMessage: (name: string) => `"Hello ${name}! Let's tackle some challenging and exciting learning projects. Which subject interests you most today?"`,
-    companionEmoji: '🎓'
+    background: 'from-slate-300/20 via-violet-300/20 to-emerald-300/20'
   }
 }
 
@@ -317,13 +312,8 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
             <div className="h-full grid grid-rows-[auto_1fr] gap-3">
               {/* Companion Message */}
               <Card className="bg-gradient-to-r from-primary/20 to-secondary/20 border-none">
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="text-2xl">{theme.companionEmoji}</div>
-                    <p className="font-body text-sm text-foreground">
-                      {theme.companionMessage(profile.name)}
-                    </p>
-                  </div>
+                <CardContent className="p-4">
+                  <CompanionMessage ageGroup={profile.ageGroup} name={profile.name} />
                 </CardContent>
               </Card>
 
