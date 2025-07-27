@@ -39,21 +39,30 @@
 - **Purpose**: Ensures developmentally appropriate content and user experience
 - **Success Criteria**: Children can easily identify their appropriate group
 
-### Avatar Creation & Customization
-- **Functionality**: Comprehensive avatar builder with unlockable content
-- **Purpose**: Creates emotional connection and investment in learning progress
-- **Success Criteria**: High customization engagement and retention
+### 3D Avatar Creation & Customization
+- **Functionality**: Comprehensive 3D avatar builder using Three.js and React Three Fiber with unlockable content
+  - Real-time 3D avatar visualization with interactive camera controls
+  - Dynamic body types, hair styles, clothing options, and accessories
+  - Emotion-based animations and facial expressions
+  - Physics-based movement and floating animations
+- **Purpose**: Creates emotional connection and investment in learning progress through realistic 3D representation
+- **Success Criteria**: High customization engagement and retention with immersive 3D experience
 
-### AI-Powered Companion System
-- **Functionality**: Age-appropriate animated characters that provide emotional support and guidance
-  - Ages 3-5: Baby Dragon (gentle, nurturing magical creature)
-  - Ages 6-9: Robot Explorer (energetic, tech-savvy adventure buddy)  
-  - Ages 10-12: Wise Guide (mystical mentor for advanced learning)
-- **Purpose**: Creates emotional connection, provides encouragement, and makes learning feel like play
+### 3D AI-Powered Companion System
+- **Functionality**: Age-appropriate 3D animated characters that provide emotional support and guidance
+  - Ages 3-5: 3D Baby Dragon (gentle, nurturing magical creature with wing-flapping and sparkle effects)
+  - Ages 6-9: 3D Robot Explorer (energetic, tech-savvy adventure buddy with glowing antenna and digital particles)  
+  - Ages 10-12: 3D Tech Guide (mystical mentor for advanced learning with floating knowledge orbs)
+- **3D Features**: 
+  - Real-time 3D rendering with dynamic lighting and shadows
+  - Emotion-responsive animations (happy, excited, proud, encouraging, thinking)
+  - Interactive 3D environment with floating elements and particle effects
+  - Physics-based movement and realistic materials
+- **Purpose**: Creates emotional connection, provides encouragement, and makes learning feel like play through immersive 3D characters
 - **Success Criteria**: High user engagement with companion interactions, positive emotional responses
 - **AI Integration**: Dynamic personality generation using spark.llm for context-aware responses
-- **Animation**: Framer Motion and GSAP for smooth, PBS Kids-style character animations
-- **Visual Effects**: Floating background elements, emotion-based color changes, micro-interactions
+- **Animation**: Framer Motion and React Three Fiber for smooth, advanced 3D character animations
+- **Visual Effects**: 3D floating background elements, emotion-based lighting changes, 3D micro-interactions
 
 ### Subject-Based Learning Modules
 - **Functionality**: Four core subjects (Math, Science, Reading, Art) with age-appropriate activities

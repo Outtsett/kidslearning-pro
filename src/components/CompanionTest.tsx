@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CompanionMessage } from '@/components/Companions'
+import { Companions3D } from '@/components/Companions3D'
 import type { AgeGroup } from '@/App'
 
 export function CompanionTest() {
@@ -72,10 +72,10 @@ export function CompanionTest() {
               </div>
             </div>
 
-            {/* Companion Display */}
+            {/* 3D Companion Display */}
             <Card className="bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-dashed border-purple-200">
-              <CardContent className="p-6">
-                <CompanionMessage
+              <CardContent className="p-6 flex justify-center">
+                <Companions3D
                   ageGroup={ageGroup}
                   name="Test User"
                   emotion={emotion}
@@ -86,15 +86,17 @@ export function CompanionTest() {
 
             {/* Info */}
             <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-medium text-blue-900 mb-2">Features Tested:</h3>
+              <h3 className="font-medium text-blue-900 mb-2">3D Features Tested:</h3>
               <ul className="text-sm text-blue-800 space-y-1">
                 <li>✨ AI-generated personality traits and dialogue</li>
                 <li>🎭 Framer Motion smooth animations</li>
-                <li>🎮 GSAP high-performance character movement</li>
-                <li>🎨 PBS Kids-style cartoon characters</li>
-                <li>🌟 Floating background elements</li>
-                <li>💫 Emotion-based visual effects</li>
-                <li>🤖 Age-appropriate character selection</li>
+                <li>🎮 React Three Fiber 3D character movement</li>
+                <li>🎨 3D cartoon characters with Three.js</li>
+                <li>🌟 Floating 3D background elements</li>
+                <li>💫 Emotion-based 3D visual effects</li>
+                <li>🤖 Age-appropriate 3D character selection</li>
+                <li>🎪 Interactive 3D environment with lighting</li>
+                <li>🌈 Real-time 3D animations and physics</li>
               </ul>
             </div>
           </CardContent>

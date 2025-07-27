@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Calculator, Flask, Book, Palette, Coins, Settings, Star, ArrowLeft } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { CustomizationStore } from '@/components/CustomizationStore'
-import { CompanionMessage } from '@/components/Companions'
+import { Companions3D } from '@/components/Companions3D'
 import { AIAnimationSystem, useAIAnimation } from '@/components/AIAnimationSystem'
 import { gsap } from 'gsap/dist/gsap'
 import type { UserProfile, Subject } from '@/App'
@@ -394,10 +394,10 @@ Return one word: happy, excited, proud, encouraging, or thinking`
         <div className="flex-1 px-3 pb-3 min-h-0">
           {!selectedSubject ? (
             <div className="h-full flex flex-col gap-3">
-              {/* Companion Message */}
+              {/* 3D Companion */}
               <Card ref={companionRef} className="bg-gradient-to-r from-primary/20 to-secondary/20 border-none flex-shrink-0">
-                <CardContent className="p-4">
-                  <CompanionMessage 
+                <CardContent className="p-4 flex justify-center">
+                  <Companions3D 
                     ageGroup={profile.ageGroup} 
                     name={profile.name}
                     emotion={companionEmotion}
