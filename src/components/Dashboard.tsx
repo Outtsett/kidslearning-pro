@@ -237,7 +237,7 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
     if (containerRef.current) {
       gsap.fromTo(containerRef.current, 
         { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }
+        { opacity: 1, y: 0, duration: 0.6, ease: "easeOut" }
       )
     }
   }, [])
@@ -252,7 +252,7 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
           scale: 1, 
           duration: 0.5, 
           stagger: 0.1,
-          ease: "back.out(1.7)"
+          ease: "backOut"
         }
       )
     }
@@ -266,7 +266,7 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
         duration: 2,
         repeat: -1,
         yoyo: true,
-        ease: "power2.inOut"
+        ease: "easeInOut"
       })
     }
   }, [])
@@ -428,7 +428,7 @@ Return one word: happy, excited, proud, encouraging, or thinking`
                           duration: 0.1,
                           yoyo: true,
                           repeat: 1,
-                          ease: "power2.out"
+                          ease: "easeOut"
                         })
                         setTimeout(() => setSelectedSubject(subject.id), 100)
                       }}

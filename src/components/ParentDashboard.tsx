@@ -210,7 +210,7 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
     if (isAuthenticated && dashboardRef.current) {
       gsap.fromTo(dashboardRef.current,
         { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }
+        { opacity: 1, y: 0, duration: 0.8, ease: "easeOut" }
       )
     }
   }, [isAuthenticated])
@@ -225,7 +225,7 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
           scale: 1, 
           duration: 0.6, 
           stagger: 0.1,
-          ease: "back.out(1.7)"
+          ease: "backOut"
         }
       )
     }

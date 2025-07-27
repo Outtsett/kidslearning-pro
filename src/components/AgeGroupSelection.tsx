@@ -69,12 +69,12 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
     gsap.to(`.age-card-${ageGroup}`, {
       scale: 1.1,
       duration: 0.2,
-      ease: "power2.out",
+      ease: "easeOut",
       onComplete: () => {
         gsap.to(`.age-card-${ageGroup}`, {
           scale: 1,
           duration: 0.2,
-          ease: "power2.out"
+          ease: "easeOut"
         })
       }
     })
