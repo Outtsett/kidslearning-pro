@@ -64,7 +64,7 @@ Consider natural, PBS kids-style animation that feels alive but not distracting.
 function FloatingElements({ count = 6, children }: { count?: number, children: React.ReactNode }) {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {Array.from({ length: count }).map((_, i) => (
+      {Array.from({ length: count }, (_, i) => (
         <motion.div
           key={i}
           className="absolute"
@@ -139,21 +139,24 @@ Keep it gentle and nurturing for young children.`
   useEffect(() => {
     if (!dragonRef.current) return
 
+    const element = dragonRef.current
     const tl = gsap.timeline({ repeat: -1 })
     
-    tl.to(dragonRef.current, {
+    tl.to(element, {
       x: movement.x * movement.intensity,
       y: movement.y * movement.intensity,
       rotation: movement.x * 0.1,
       duration: 3 + Math.random() * 2,
       ease: 'power2.inOut'
-    }).to(dragonRef.current, {
+    })
+    .to(element, {
       x: -movement.x * movement.intensity * 0.5,
       y: movement.y * movement.intensity * 0.3,
       rotation: -movement.x * 0.1,
       duration: 3 + Math.random() * 2,
       ease: 'power2.inOut'
-    }).to(dragonRef.current, {
+    })
+    .to(element, {
       x: 0,
       y: 0,
       rotation: 0,
@@ -162,7 +165,7 @@ Keep it gentle and nurturing for young children.`
     })
 
     return () => {
-      if (tl) tl.kill()
+      tl.kill()
     }
   }, [movement])
 
@@ -381,21 +384,24 @@ Keep it playful and tech-themed for school-age children.`
   useEffect(() => {
     if (!robotRef.current) return
 
+    const element = robotRef.current
     const tl = gsap.timeline({ repeat: -1 })
     
-    tl.to(robotRef.current, {
+    tl.to(element, {
       x: movement.x * movement.intensity,
       y: movement.y * movement.intensity,
       rotation: movement.x * 0.05,
       duration: 2.5 + Math.random(),
       ease: 'power1.inOut'
-    }).to(robotRef.current, {
+    })
+    .to(element, {
       x: -movement.x * movement.intensity * 0.7,
       y: movement.y * movement.intensity * 0.5,
       rotation: -movement.x * 0.05,
       duration: 2.5 + Math.random(),
       ease: 'power1.inOut'
-    }).to(robotRef.current, {
+    })
+    .to(element, {
       x: 0,
       y: 0,
       rotation: 0,
@@ -404,7 +410,7 @@ Keep it playful and tech-themed for school-age children.`
     })
 
     return () => {
-      if (tl) tl.kill()
+      tl.kill()
     }
   }, [movement])
 
@@ -629,21 +635,24 @@ Keep it mystical but relatable for older children.`
   useEffect(() => {
     if (!guideRef.current) return
 
+    const element = guideRef.current
     const tl = gsap.timeline({ repeat: -1 })
     
-    tl.to(guideRef.current, {
+    tl.to(element, {
       x: movement.x * movement.intensity,
       y: movement.y * movement.intensity,
       rotation: movement.x * 0.03,
       duration: 4 + Math.random(),
       ease: 'power2.inOut'
-    }).to(guideRef.current, {
+    })
+    .to(element, {
       x: -movement.x * movement.intensity * 0.6,
       y: movement.y * movement.intensity * 0.4,
       rotation: -movement.x * 0.03,
       duration: 4 + Math.random(),
       ease: 'power2.inOut'
-    }).to(guideRef.current, {
+    })
+    .to(element, {
       x: 0,
       y: 0,
       rotation: 0,
@@ -652,7 +661,7 @@ Keep it mystical but relatable for older children.`
     })
 
     return () => {
-      if (tl) tl.kill()
+      tl.kill()
     }
   }, [movement])
 
