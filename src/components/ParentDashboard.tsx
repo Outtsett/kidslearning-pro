@@ -839,9 +839,10 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+              </div>
+            </TabsContent>
 
-          {/* Reports Tab */}
+            {/* Reports Tab */}
           <TabsContent value="reports" className="space-y-6">
             <ExportReports profile={profile} sessions={sessions} />
             
