@@ -762,7 +762,7 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
                 </CardContent>
               </Card>
             </TabsContent>
-          </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
