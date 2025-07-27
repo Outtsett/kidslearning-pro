@@ -38,6 +38,11 @@ const STORE_ITEMS = {
 }
 
 export function CustomizationStore({ profile, onProfileUpdate, onClose }: CustomizationStoreProps) {
+  // Safety check for profile
+  if (!profile) {
+    return <div>Loading...</div>
+  }
+
   const [previewAvatar, setPreviewAvatar] = useState(profile.avatar)
   const [previewTheme, setPreviewTheme] = useState(profile.theme)
 

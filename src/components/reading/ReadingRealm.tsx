@@ -65,6 +65,11 @@ const READING_ACTIVITIES: ReadingActivity[] = [
 export function ReadingRealm({ profile, onComplete, onBack }: ReadingRealmProps) {
   const [selectedActivity, setSelectedActivity] = useState<string | null>(null)
   
+  // Safety check for profile
+  if (!profile) {
+    return <div>Loading...</div>
+  }
+  
   // Filter activities based on user's age group
   const availableActivities = READING_ACTIVITIES.filter(activity => 
     activity.ageGroups.includes(profile.ageGroup)

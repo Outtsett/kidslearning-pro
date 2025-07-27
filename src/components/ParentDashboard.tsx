@@ -196,6 +196,23 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
     return <PasswordProtection onAuthenticated={() => setIsAuthenticated(true)} />
   }
 
+  // Safety check for profile
+  if (!profile) {
+    return (
+      <div className="h-screen bg-gradient-to-br from-background via-card to-muted flex items-center justify-center">
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="p-6">
+            <p>No profile data available</p>
+            <Button onClick={onBack} className="mt-4">
+              <ArrowLeft size={16} className="mr-2" />
+              Go Back
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   const subjectConfig = {
     math: { icon: Calculator, color: 'text-blue-600', bg: 'bg-blue-50' },
     reading: { icon: BookOpen, color: 'text-green-600', bg: 'bg-green-50' },

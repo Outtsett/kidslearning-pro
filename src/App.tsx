@@ -115,9 +115,14 @@ function App() {
     )
   }
 
+  // Safety check - ensure we have both age group and profile
+  if (!profile) {
+    return <div>Loading profile...</div>
+  }
+
   return (
     <Dashboard
-      profile={profile!}
+      profile={profile}
       onProfileUpdate={setProfile}
       onActivityStart={handleActivityStart}
       onShowParentDashboard={handleShowParentDashboard}

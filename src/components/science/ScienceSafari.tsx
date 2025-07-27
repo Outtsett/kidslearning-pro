@@ -59,6 +59,11 @@ export function ScienceSafari({ profile, onComplete, onBack }: ScienceSafariProp
   const [startTime] = useState(Date.now())
   const { recordSession } = useSessionTracking()
 
+  // Safety check for profile
+  if (!profile) {
+    return <div>Loading...</div>
+  }
+
   const ageGroupConfig = AGE_GROUP_ACTIVITIES[profile.ageGroup]
 
   const getRandomEncouragement = () => {

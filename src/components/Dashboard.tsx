@@ -229,6 +229,11 @@ export function Dashboard({ profile, onProfileUpdate, onActivityStart, onShowPar
   const [showCustomization, setShowCustomization] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
 
+  // Safety check - return early if profile is not available
+  if (!profile) {
+    return <div>Loading...</div>
+  }
+
   const activities = ACTIVITIES_BY_AGE[profile.ageGroup]
   const theme = AGE_GROUP_THEMES[profile.ageGroup]
 
