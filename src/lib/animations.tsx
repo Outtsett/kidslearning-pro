@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { gsap } from 'gsap'
+import { motion, AnimatePresence, useAnimation } from 'framer-motion'
 import { useSound } from '@/lib/sound'
 import type { AgeGroup, Subject } from '@/App'
 
@@ -286,60 +285,61 @@ export function InteractiveSparkle({ children, ageGroup, onClick }: {
 // Advanced animation hook for complex sequences
 export function useAdvancedAnimation() {
   const { playSuccess, playError, playAchievement } = useSound()
+  const controls = useAnimation()
 
-  const createCelebrationSequence = (element: HTMLElement, type: 'success' | 'achievement' | 'level_up') => {
-    const tl = gsap.timeline()
-
+  const createCelebrationSequence = async (type: 'success' | 'achievement' | 'level_up') => {
     switch (type) {
       case 'success':
         playSuccess()
-        tl.to(element, { scale: 1.1, duration: 0.2 })
-          .to(element, { scale: 1, duration: 0.2 })
-          .to(element, { y: -10, duration: 0.3 })
-          .to(element, { y: 0, duration: 0.3, ease: 'bounce.out' })
+        await controls.start({
+          scale: [1, 1.1, 1],
+          y: [0, -10, 0],
+          transition: { duration: 0.8, ease: "easeOut" }
+        })
         break
 
       case 'achievement':
         playAchievement()
-        tl.to(element, { scale: 1.2, duration: 0.3, ease: 'back.out(1.7)' })
-          .to(element, { scale: 1, duration: 0.2 })
-          .to(element, { rotation: 5, duration: 0.1 })
-          .to(element, { rotation: -5, duration: 0.1 })
-          .to(element, { rotation: 0, duration: 0.1 })
+        await controls.start({
+          scale: [1, 1.2, 1],
+          rotate: [0, 5, -5, 0],
+          transition: { duration: 0.8, ease: "backOut" }
+        })
         break
 
       case 'level_up':
         playAchievement()
-        tl.to(element, { scale: 1.3, duration: 0.4, ease: 'elastic.out(1, 0.5)' })
-          .to(element, { scale: 1, duration: 0.3 })
-          .set(element, { filter: 'hue-rotate(0deg) brightness(1.2)' })
-          .to(element, { filter: 'hue-rotate(360deg) brightness(1)', duration: 1 })
+        await controls.start({
+          scale: [1, 1.3, 1],
+          filter: ['hue-rotate(0deg) brightness(1)', 'hue-rotate(360deg) brightness(1.2)', 'hue-rotate(0deg) brightness(1)'],
+          transition: { duration: 1.8, ease: "elasticOut" }
+        })
         break
     }
-
-    return tl
   }
 
-  const createErrorShake = (element: HTMLElement) => {
+  const createErrorShake = async () => {
     playError()
-    return gsap.to(element, {
+    await controls.start({
       x: [-5, 5, -5, 5, 0],
-      duration: 0.5,
-      ease: 'power2.inOut'
+      transition: { duration: 0.5, ease: "easeInOut" }
     })
   }
 
-  const createPulseAttention = (element: HTMLElement) => {
-    return gsap.to(element, {
+  const createPulseAttention = async () => {
+    await controls.start({
       scale: [1, 1.05, 1],
-      boxShadow: ['0 0 0 0 rgba(var(--primary), 0.7)', '0 0 0 10px rgba(var(--primary), 0)', '0 0 0 0 rgba(var(--primary), 0)'],
-      duration: 1.5,
-      repeat: -1,
-      ease: 'power2.inOut'
+      boxShadow: [
+        '0 0 0 0 rgba(var(--primary), 0.7)', 
+        '0 0 0 10px rgba(var(--primary), 0)', 
+        '0 0 0 0 rgba(var(--primary), 0)'
+      ],
+      transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
     })
   }
 
   return {
+    controls,
     createCelebrationSequence,
     createErrorShake,
     createPulseAttention

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Calculator, Flask, Book, Palette, Coins, Settings, Star, ArrowLeft } from '@phosphor-icons/react'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { CustomizationStore } from '@/components/CustomizationStore'
-import { CharacterScene } from '@/components/3D/CharacterScene'
+import { SimpleCharacterScene } from '@/components/3D/SimpleCharacterScene'
 import type { UserProfile, Subject } from '@/App'
 
 interface DashboardProps {
@@ -393,7 +393,7 @@ Return one word: happy, excited, proud, encouraging, or thinking`
               {/* 3D Companion */}
               <Card ref={companionRef} className="bg-gradient-to-r from-primary/20 to-secondary/20 border-none flex-shrink-0">
                 <CardContent className="p-2">
-                  <CharacterScene
+                  <SimpleCharacterScene
                     ageGroup={profile.ageGroup}
                     emotion={companionEmotion}
                     activity={companionActivity}

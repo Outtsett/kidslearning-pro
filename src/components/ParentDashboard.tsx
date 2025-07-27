@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
-import { gsap } from 'gsap/dist/gsap'
+import { motion } from 'framer-motion'
 import { 
   BarChart3, 
   Calendar, 
@@ -207,28 +207,11 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
 
   // Animation setup
   useEffect(() => {
-    if (isAuthenticated && dashboardRef.current) {
-      gsap.fromTo(dashboardRef.current,
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "easeOut" }
-      )
-    }
+    // Animations are now handled by framer-motion
   }, [isAuthenticated])
 
   useEffect(() => {
-    if (isAuthenticated && cardsRef.current.length > 0) {
-      gsap.fromTo(cardsRef.current,
-        { opacity: 0, y: 20, scale: 0.9 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          scale: 1, 
-          duration: 0.6, 
-          stagger: 0.1,
-          ease: "backOut"
-        }
-      )
-    }
+    // Animations are now handled by framer-motion
   }, [isAuthenticated, sessions.length])
 
   // Show password protection first
@@ -460,7 +443,13 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
   }
 
   return (
-    <div ref={dashboardRef} className="h-screen bg-gradient-to-br from-background via-card to-muted overflow-hidden">
+    <motion.div 
+      ref={dashboardRef} 
+      className="h-screen bg-gradient-to-br from-background via-card to-muted overflow-hidden"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+    >
       <div className="h-full flex flex-col p-4">
         {/* Header - Fixed */}
         <div className="flex items-center justify-between mb-4">
@@ -821,6 +810,6 @@ export function ParentDashboard({ profile, onBack }: ParentDashboardProps) {
           </Tabs>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

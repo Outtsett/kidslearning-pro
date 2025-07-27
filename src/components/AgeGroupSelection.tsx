@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Heart } from '@phosphor-icons/react'
-import { gsap } from 'gsap/dist/gsap'
 import type { AgeGroup } from '@/App'
 
 interface AgeGroupSelectionProps {
@@ -65,20 +64,6 @@ export function AgeGroupSelection({ onAgeGroupSelected }: AgeGroupSelectionProps
   const handleAgeGroupClick = (ageGroup: AgeGroup) => {
     setSelectedAge(ageGroup)
     
-    // Animate selection with GSAP
-    gsap.to(`.age-card-${ageGroup}`, {
-      scale: 1.1,
-      duration: 0.2,
-      ease: "easeOut",
-      onComplete: () => {
-        gsap.to(`.age-card-${ageGroup}`, {
-          scale: 1,
-          duration: 0.2,
-          ease: "easeOut"
-        })
-      }
-    })
-
     // Auto-navigate after a brief delay
     setTimeout(() => {
       onAgeGroupSelected(ageGroup)

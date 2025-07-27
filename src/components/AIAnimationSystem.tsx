@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { gsap } from 'gsap'
+import { motion, AnimatePresence, useAnimation } from 'framer-motion'
 import type { AgeGroup, Subject } from '@/App'
 
 interface AIAnimationSystemProps {
@@ -202,71 +201,66 @@ function AnimatedParticles({ particles }: { particles: ParticleConfig[] }) {
 
 // Background effect component
 function BackgroundEffect({ effect }: { effect: BackgroundEffect }) {
-  const bgRef = useRef<HTMLDivElement>(null)
+  const controls = useAnimation()
 
   useEffect(() => {
-    if (!bgRef.current) return
+    const runAnimation = async () => {
+      switch (effect.type) {
+        case 'pulse':
+          await controls.start({
+            scale: [1, 1 + effect.intensity * 0.05, 1],
+            transition: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+          })
+          break
+        
+        case 'wave':
+          await controls.start({
+            background: [
+              `linear-gradient(45deg, ${effect.color}20, ${effect.color}10, ${effect.color}20)`,
+              `linear-gradient(45deg, ${effect.color}10, ${effect.color}20, ${effect.color}10)`
+            ],
+            transition: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+          })
+          break
 
-    const tl = gsap.timeline({ repeat: -1 })
+        case 'sparkle':
+          await controls.start({
+            filter: [
+              'hue-rotate(0deg) saturate(1)',
+              `hue-rotate(${effect.intensity * 10}deg) saturate(${1 + effect.intensity * 0.2})`,
+              'hue-rotate(0deg) saturate(1)'
+            ],
+            transition: { duration: 1, repeat: Infinity, ease: "easeInOut" }
+          })
+          break
 
-    switch (effect.type) {
-      case 'pulse':
-        tl.to(bgRef.current, {
-          scale: 1 + effect.intensity * 0.05,
-          duration: 1,
-          ease: 'power2.inOut'
-        }).to(bgRef.current, {
-          scale: 1,
-          duration: 1,
-          ease: 'power2.inOut'
-        })
-        break
-      
-      case 'wave':
-        tl.to(bgRef.current, {
-          background: `linear-gradient(45deg, ${effect.color}20, ${effect.color}10, ${effect.color}20)`,
-          duration: 2,
-          ease: 'sine.inOut'
-        }).to(bgRef.current, {
-          background: `linear-gradient(45deg, ${effect.color}10, ${effect.color}20, ${effect.color}10)`,
-          duration: 2,
-          ease: 'sine.inOut'
-        })
-        break
-
-      case 'sparkle':
-        tl.to(bgRef.current, {
-          filter: `hue-rotate(${effect.intensity * 10}deg) saturate(${1 + effect.intensity * 0.2})`,
-          duration: 0.5,
-          ease: 'power2.inOut'
-        }).to(bgRef.current, {
-          filter: 'hue-rotate(0deg) saturate(1)',
-          duration: 0.5,
-          ease: 'power2.inOut'
-        })
-        break
-
-      case 'gradient_shift':
-        tl.to(bgRef.current, {
-          background: `radial-gradient(circle at 30% 30%, ${effect.color}15, transparent 70%)`,
-          duration: 3,
-          ease: 'power2.inOut'
-        }).to(bgRef.current, {
-          background: `radial-gradient(circle at 70% 70%, ${effect.color}15, transparent 70%)`,
-          duration: 3,
-          ease: 'power2.inOut'
-        })
-        break
+        case 'gradient_shift':
+          await controls.start({
+            background: [
+              `radial-gradient(circle at 30% 30%, ${effect.color}15, transparent 70%)`,
+              `radial-gradient(circle at 70% 70%, ${effect.color}15, transparent 70%)`,
+              `radial-gradient(circle at 30% 30%, ${effect.color}15, transparent 70%)`
+            ],
+            transition: { duration: 6, repeat: Infinity, ease: "easeInOut" }
+          })
+          break
+      }
     }
 
-    return () => {
-      tl.kill()
-    }
-  }, [effect])
-
-  if (effect.type === 'none') return null
+    runAnimation()
+  }, [effect, controls])
 
   return (
+    <motion.div
+      animate={controls}
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        background: effect.color ? `${effect.color}10` : 'transparent',
+        mixBlendMode: 'multiply'
+      }}
+    />
+  )
+}
     <div
       ref={bgRef}
       className="absolute inset-0 pointer-events-none transition-all duration-500"

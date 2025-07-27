@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { CharacterScene, CompanionWidget } from './3D/CharacterScene'
+import { SimpleCharacterScene, SimpleCompanionWidget } from './3D/SimpleCharacterScene'
 import type { AgeGroup } from '@/App'
 
 interface DialogueOption {
@@ -162,7 +162,7 @@ export function CompanionTest({}: CompanionTestProps) {
             <h3 className="text-xl font-heading mb-4 text-center">
               {characterNames[selectedAge]}
             </h3>
-            <CharacterScene
+            <SimpleCharacterScene
               ageGroup={selectedAge}
               emotion={currentOption.emotion}
               activity={currentOption.activity}
@@ -239,7 +239,7 @@ export function CompanionTest({}: CompanionTestProps) {
           <div className="flex items-center justify-center gap-8">
             <div className="text-center">
               <p className="text-sm font-medium mb-2">Small Widget</p>
-              <CompanionWidget 
+              <SimpleCompanionWidget 
                 ageGroup={selectedAge}
                 emotion={currentOption.emotion}
                 activity={currentOption.activity}
@@ -248,7 +248,7 @@ export function CompanionTest({}: CompanionTestProps) {
             </div>
             <div className="text-center">
               <p className="text-sm font-medium mb-2">Medium Widget</p>
-              <CompanionWidget 
+              <SimpleCompanionWidget 
                 ageGroup={selectedAge}
                 emotion={currentOption.emotion}
                 activity={currentOption.activity}
@@ -257,7 +257,7 @@ export function CompanionTest({}: CompanionTestProps) {
             </div>
             <div className="text-center">
               <p className="text-sm font-medium mb-2">Large Widget</p>
-              <CompanionWidget 
+              <SimpleCompanionWidget 
                 ageGroup={selectedAge}
                 emotion={currentOption.emotion}
                 activity={currentOption.activity}
