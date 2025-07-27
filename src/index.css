@@ -1,9 +1,10 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
 
+/* Map CSS variables to Tailwind classes */
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--border);
   }
 }
 
@@ -35,6 +36,14 @@
   --lavender-foreground: oklch(0.25 0.02 85);
 
   --radius: 1rem;
+
+  /* Define radius variables */
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) * 1.5);
+  --radius-xl: calc(var(--radius) * 2);
+  --radius-2xl: calc(var(--radius) * 3);
+  --radius-full: 9999px;
 
   /* Font definitions */
   --font-heading: 'Fredoka', system-ui, sans-serif;

@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { AgeGroupSelection } from '@/components/AgeGroupSelection'
 import { Dashboard } from '@/components/Dashboard'
 import { LearningActivity } from '@/components/LearningActivity'
 import { ParentDashboard } from '@/components/ParentDashboard'
+import { CompanionTest } from '@/components/CompanionTest'
 
 export type AgeGroup = '3-5' | '6-9' | '10-12'
 export type Subject = 'math' | 'science' | 'reading' | 'art'
@@ -35,6 +36,20 @@ function App() {
   const [selectedAgeGroup, setSelectedAgeGroup] = useKV<AgeGroup | null>('selected-age-group', null)
   const [currentActivity, setCurrentActivity] = useState<ActivityState>({ subject: null, activityId: null })
   const [showParentDashboard, setShowParentDashboard] = useState(false)
+  const [showCompanionTest, setShowCompanionTest] = useState(false)
+
+  // Add a secret key combination to show companion test
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+        setShowCompanionTest(true)
+      } else if (e.key === 'Escape' && showCompanionTest) {
+        setShowCompanionTest(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showCompanionTest])
 
   const handleAgeGroupSelected = (ageGroup: AgeGroup) => {
     setSelectedAgeGroup(ageGroup)
@@ -87,6 +102,11 @@ function App() {
   const handleBackToAgeSelection = () => {
     setSelectedAgeGroup(null)
     setProfile(null)
+  }
+
+  // If showing companion test, show that
+  if (showCompanionTest) {
+    return <CompanionTest />
   }
 
   // If no age group is selected, show age group selection
