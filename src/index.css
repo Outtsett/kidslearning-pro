@@ -1,6 +1,12 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
 
+@layer base {
+  * {
+    @apply border-border;
+  }
+}
+
 :root {
   --background: oklch(0.97 0.02 85);
   --foreground: oklch(0.25 0.02 85);
@@ -33,10 +39,6 @@
   /* Font definitions */
   --font-heading: 'Fredoka', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
-}
-
-* {
-  border-color: var(--border);
 }
 
 .font-heading {
