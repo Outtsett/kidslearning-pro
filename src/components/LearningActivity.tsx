@@ -380,6 +380,7 @@ export function LearningActivity({ subject, activityId, profile, onComplete, onB
               </div>
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
     </AIAnimationSystem>
